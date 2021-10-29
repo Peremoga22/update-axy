@@ -1,0 +1,242 @@
+﻿@page "/transaction-category"
+@inject NavigationManager _navigationManager
+@inject IJSRuntime _jsRuntime
+
+
+<div class="alert alert-primary" role="alert">
+    <p class="text-right" style="color:blue;"> Costs: @sumCost </p>
+</div>
+<div class="text-center">
+    <div>
+        <div>
+            <h3>Categories</h3>
+            <br />
+            <p style="color:red">@message</p>
+            <div class="row">
+                <div class="col-sm-6">
+                    <h5 class="text-left">Receipts</h5>
+                    <table class="table ">
+                        <thead>
+                            <tr>
+                                <th class="text-center">Description</th>
+                                <th class="text-center">Expected Amount </th>
+                                <th class="text-center">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in transactCategoryList)
+                            {
+                                <tr>
+                                    <td class="text-center" style="color:green">@item.Description</td>
+                                    <td class="text-center">@item.ExpectedAmount</td>
+                                    <td class="text-center">
+                                        <button class="btn btn-sm btn-outline-dark">
+                                            <img @onclick="(() => ShowPopupReciept(item.ID))" src="https://img.icons8.com/external-kiranshastry-solid-kiranshastry/21/000000/external-edit-interface-kiranshastry-solid-kiranshastry.png" />
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-danger">
+                                            <img @onclick="(() => DeleteReceipt(item.ID))" disabled="@DeleteDisabled" src="https://img.icons8.com/ios/21/000000/delete-forever--v1.png" />
+                                        </button>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                    <div class="text-left">
+                        <NavLink class="btn btn-outline-secondary" @onclick="(() => ShowPopupReciept(0))">Add Receipt</NavLink>
+                    </div>
+                </div>
+                <div class="col-sm-6">
+                    <h5 class="text-left">Expenditures</h5>
+                    <table class="table ">
+                        <thead>
+                            <tr>
+                                <th class="text-center">Description</th>
+                                <th class="text-center">Expected Amount </th>
+                                <th class="text-center">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in transactCategoryList)
+                            {
+                                <tr>
+                                    <td class="text-center" style="color:red">@item.Description</td>
+                                    <td class="text-center">@item.ExpectedAmount</td>
+                                    <td class="text-center">
+                                        <button class="btn btn-sm btn-outline-dark">
+                                            <img @onclick="(() => ShowPopupExpenditure(item.ID))" src="https://img.icons8.com/external-kiranshastry-solid-kiranshastry/21/000000/external-edit-interface-kiranshastry-solid-kiranshastry.png" />
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-danger">
+                                            <img @onclick="(() => DeleteExpenditure(item.ID))" disabled="@DeleteDisabled" src="https://img.icons8.com/ios/21/000000/delete-forever--v1.png" />
+                                        </button>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                    <div class="text-left">
+                        <NavLink class="btn btn-outline-secondary" @onclick="(() => ShowPopupExpenditure(0))">Add Expenditure</NavLink>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (popupReceipt)
+{
+    <EditForm Model="@model" OnValidSubmit="HandleValidSubmitPopupReciept" class="body  p-3 mb-5 rounded ">
+        <div class="modal" tabindex="-1" role="dialog" style="display:block;">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        @if (model.ID > 0)
+                        {
+                            <h5 class="modal-title" style="color:red">Edit Reciept!</h5>
+                        }
+                        else
+                        {
+                            <h5 class="modal-title" style="color:green">Add new reciept!</h5>
+                        }
+
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close" @onclick="(() => ClosePopup())">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <table class="table table-striped table-bordered table-sm">
+
+                            <tr class="form-group">
+                                <td>Description</td>
+                                <td><input class="form-control" type="text" @bind-value="model.Description" /></td>
+                            </tr>
+                            <tr class="form-group">
+                                <td>Receipt Amount</td>
+                                <td><input class="form-control" type="number" @bind-value="model.ExpectedAmount" /></td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="modal-footer" @onclick="(() => CleaningMessage())">
+                        <button type="submit" class="btn btn-primary">Save changes</button>
+                        <button type="button" class="btn btn-secondary" @onclick="(() => ClosePopup())" data-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </EditForm>
+}
+@if (popupExpenditure)
+{
+    <EditForm Model="@model" OnValidSubmit="HandleValidSubmitExpenditure" class="body  p-3 mb-5 rounded ">
+        <div class="modal" tabindex="-1" role="dialog" style="display:block;">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        @if (model.ID > 0)
+                        {
+                            <h5 class="modal-title" style="color:red">Edit Expenditure!</h5>
+                        }
+                        else
+                        {
+                            <h5 class="modal-title" style="color:green">Add new expenditure!</h5>
+                        }
+
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close" @onclick="(() => ClosePopup())">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <table class="table table-striped table-bordered table-sm">
+
+                            <tr class="form-group">
+                                <td>Description</td>
+                                <td><input class="form-control" type="text" @bind-value="model.Description" /></td>
+                            </tr>
+                            <tr class="form-group">
+                                <td>Expected Amount</td>
+                                <td><input class="form-control" type="number" @bind-value="model.ExpectedAmount" /></td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="modal-footer" @onclick="(() => CleaningMessage())">
+                        <button type="submit" class="btn btn-primary">Save changes</button>
+                        <button type="button" class="btn btn-secondary" @onclick="(() => ClosePopup())" data-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </EditForm>
+}
+
+@code {
+
+    [CascadingParameter]
+    private Task<AuthenticationState> authenticationStateTask { get; set; }
+    List<TransactionCategoryDto> transactCategoryList = new List<TransactionCategoryDto>();
+    TransactionCategoryDto model = new TransactionCategoryDto();
+    string DeleteDisabled { get; set; } = null;
+    IdentityUser userIdentity;
+    decimal sumCost;
+    string message;
+    bool popupReceipt = false;
+    bool popupExpenditure = false;
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await authenticationStateTask;
+        var user = authState.User;
+        if (user.Identity.IsAuthenticated)
+        {
+            string userIdClaimTypes = user.FindFirst(ClaimTypes.NameIdentifier).Value;
+            userIdentity.Id = userIdClaimTypes;
+        }
+    }
+
+    public void ShowPopupReciept(int id)
+    {
+        popupReceipt = true;
+        var transactionType = new TransactionTypeDto();
+        transactionType.ID = model.TransactionType.ID;
+        transactionType.Description = model.TransactionType.Description;
+        transactionType.IsActive = true;
+        var transactionTypeId = TransactionTypeAdapter.SaveTransactionType(transactionType);
+
+        model.User = userIdentity;
+        model.TransactionType.ID = transactionTypeId;
+      
+    }
+
+    public void ShowPopupExpenditure(int id)
+    {
+        popupExpenditure = true;
+    }
+
+    private void HandleValidSubmitPopupReciept()
+    {
+
+    }
+
+    private void HandleValidSubmitExpenditure()
+    {
+
+    }
+
+    public void ClosePopup()
+    {
+        popupReceipt = false;
+        popupExpenditure = false;
+    }
+
+    private void DeleteExpenditure(int id)
+    {
+
+    }
+
+    private void DeleteReceipt(int id)
+    {
+
+    }
+
+    private void CleaningMessage()
+    {
+        message = "";
+    }
+}
