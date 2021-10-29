@@ -11,7 +11,7 @@ namespace web.Data.Adapters
 {
     public static class TransactionCategoryAdapter
     {
-        public static List<TransactionCategoryDto> GetTransactionType(string userId)
+        public static List<TransactionCategoryDto> GetTransactionCategories(string userId)
         {
             var result = new List<TransactionCategoryDto>();
 

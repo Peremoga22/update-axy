@@ -24,7 +24,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach (var item in transactCategoryList)
+                            @foreach (var item in transactCategoryList.Where(z => z.IsActive == false))
                             {
                                 <tr>
                                     <td class="text-center" style="color:green">@item.Description</td>
@@ -56,7 +56,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach (var item in transactCategoryList)
+                            @foreach (var item in transactCategoryList.Where(z=>z.IsActive== true))
                             {
                                 <tr>
                                     <td class="text-center" style="color:red">@item.Description</td>
@@ -187,21 +187,14 @@
         {
             string userIdClaimTypes = user.FindFirst(ClaimTypes.NameIdentifier).Value;
             userIdentity.Id = userIdClaimTypes;
+            transactCategoryList = TransactionCategoryAdapter.GetTransactionCategories(userIdClaimTypes);
         }
     }
 
     public void ShowPopupReciept(int id)
     {
         popupReceipt = true;
-        var transactionType = new TransactionTypeDto();
-        transactionType.ID = model.TransactionType.ID;
-        transactionType.Description = model.TransactionType.Description;
-        transactionType.IsActive = true;
-        var transactionTypeId = TransactionTypeAdapter.SaveTransactionType(transactionType);
-
-        model.User = userIdentity;
-        model.TransactionType.ID = transactionTypeId;
-      
+        // egit 
     }
 
     public void ShowPopupExpenditure(int id)
@@ -211,12 +204,28 @@
 
     private void HandleValidSubmitPopupReciept()
     {
+        var transactionType = new TransactionTypeDto();
+        transactionType.ID = 0;
+        transactionType.Description = model.Description;
+        transactionType.IsActive = true;
+        var transactionTypeId = TransactionTypeAdapter.SaveTransactionType(transactionType);
 
+        model.User = userIdentity;
+        model.TransactionType.ID = transactionTypeId;
+        TransactionCategoryAdapter.SaveTransactionCategory(model);
     }
 
     private void HandleValidSubmitExpenditure()
     {
+        var transactionType = new TransactionTypeDto();
+        transactionType.ID = 0;
+        transactionType.Description = model.Description;
+        transactionType.IsActive = false;
+        var transactionTypeId = TransactionTypeAdapter.SaveTransactionType(transactionType);
 
+        model.User = userIdentity;
+        model.TransactionType.ID = transactionTypeId;
+        TransactionCategoryAdapter.SaveTransactionCategory(model);
     }
 
     public void ClosePopup()
