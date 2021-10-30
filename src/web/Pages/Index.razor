@@ -1,6 +1,7 @@
 ﻿@page "/"
 @inject NavigationManager _navigationManager
 @inject IJSRuntime _jsRuntime
+@inject IStringLocalizer<App> _localizer
 
 <div class="alert alert-primary" role="alert">
     <p class="text-right" style="color:blue;">@_localizer["Costs"]: @sumCost</p>
@@ -12,18 +13,18 @@
             <EditForm Model="@model" OnValidSubmit="HandleValidSubmit" class="card-body">
                 <div class="form-group">
                     <label>@_localizer["Date time"]</label>
-                    <input type="date" class="form-control" @bind-value="model.CurrentDate">
+                    <input type="date" class="form-control" @bind-value="model.TransactionDate">
                 </div>
                 <div class="form-group">
                     @if (!Approved)
                     {
                         <label for="formGroupExampleInput2">@_localizer["Sum"]</label>
-                        <InputNumber @bind-Value="model.SumReceipt" class="form-control" placeholder="Sum" />
+                        <InputNumber @bind-Value="model.Amount" class="form-control" placeholder="Sum" />
                     }
                     else
                     {
                         <label for="formGroupExampleInput2">@_localizer["Sum"]</label>
-                        <InputNumber @bind-Value="model.SumExpenditure" class="form-control" placeholder="Sum" />
+                        <InputNumber @bind-Value="model.Amount" class="form-control" placeholder="Sum" />
                     }
 
                 </div>
@@ -36,22 +37,22 @@
                 <div class="input-group mb-3">
                     @if (!Approved)
                     {
-                        <InputSelect class="custom-select" @bind-Value="model.ReceiptId" @onclick="(() => Reset())">
+                        <InputSelect class="custom-select" @bind-Value="model.TransactionCategory" @onclick="(() => Reset())">
                             <option value="">@_localizer["Choose an option"]</option>
-                            @foreach (var r in receiptModel)
+                            @foreach (var r in transactionCategoryList.Where(z=>z.IsActive == false).ToList())
                                 {
-                                <option value="@r.Id">@r.Name</option>
+                                <option value="@r.ID">@r.Description</option>
                                 }
                         </InputSelect>
                     }
                     else
                     {
 
-                        <InputSelect class="custom-select" @bind-Value="model.ExpenditureId" @onclick="(() => Reset())">
+                        <InputSelect class="custom-select" @bind-Value="model.TransactionCategory" @onclick="(() => Reset())">
                             <option value="">Choose an option</option>
-                            @foreach (var e in expenditureModel)
-                                {
-                                <option value="@e.Id">@e.Name</option>
+                            @foreach (var e in transactionCategoryList.Where(z => z.IsActive == true).ToList())
+                            {
+                                <option value="@e.ID">@e.Description</option>
                                 }
                         </InputSelect>
                     }
@@ -66,7 +67,7 @@
                 </div>
                 <div class="form-group">
                     <label for="formGroupExampleInput2">@_localizer["Description"]</label>
-                    <InputText id="title" @bind-Value="model.DescriptionCategory" class="form-control" placeholder="@_localizer["Add description"]" />
+                    <InputText id="title" @bind-Value="model.Note" class="form-control" placeholder="@_localizer["Add description"]" />
                 </div>
                 <br />
                 <button type="submit" class="btn btn-outline-warning ">@_localizer["Save"]</button>
@@ -76,9 +77,9 @@
         <div class="card">
             <div class="card-body">
                 <ul class="list-unstyled text-left">
-                    <li>@_localizer["Current balance"]: @model.CurrentBalance</li>
-                    <li>@_localizer["Savings for this month"]: @model.SavingForThisMounth</li>
-                    <li>@_localizer["Balance at the beginning of the month"]: @model.BalanceTheBeginningMounth</li>
+                    <li>@_localizer["Current balance"]: </li>
+                    <li>@_localizer["Savings for this month"]: </li>
+                    <li>@_localizer["Balance at the beginning of the month"]: </li>
                 </ul>
             </div>
         </div>
@@ -91,8 +92,8 @@
     [CascadingParameter]
     private Task<AuthenticationState> authenticationStateTask { get; set; }
 
-    List<TransactionCategory> transactionCategories = new List<TransactionCategory>();
-    TransactionCategory model = new TransactionCategory();
+    List<TransactionCategoryDto> transactionCategoryList = new List<TransactionCategoryDto>();
+    TransactionDto model = new TransactionDto();
 
     public bool Approved = false;
     string message;
@@ -107,6 +108,37 @@
         if (user.Identity.IsAuthenticated)
         {
             userId = user.FindFirst(ClaimTypes.NameIdentifier).Value;
+            transactionCategoryList = TransactionCategoryAdapter.GetTransactionCategories(userId);
         }
+    }
+
+    private void HandleValidSubmit()
+    {
+
+    }
+
+    public void IsReceiptsExpenditures()
+    {
+        if (Approved)
+        {
+            transactionCategoryList = TransactionCategoryAdapter.GetTransactionCategories(userId).Where(z => z.IsActive == false).ToList();
+        }
+        else
+        {
+            transactionCategoryList = TransactionCategoryAdapter.GetTransactionCategories(userId).Where(z => z.IsActive == true).ToList();
+        }
+
+        Approved = !Approved;
+        model.IsHidden = Approved;
+    }
+
+    protected void Edit()
+    {
+        _navigationManager.NavigateTo("/transaction-category");
+    }
+
+    public void Reset()
+    {
+        message = "";
     }
 }
