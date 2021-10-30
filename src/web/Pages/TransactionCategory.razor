@@ -174,7 +174,7 @@
     List<TransactionCategoryDto> transactCategoryList = new List<TransactionCategoryDto>();
     TransactionCategoryDto model = new TransactionCategoryDto();
     string DeleteDisabled { get; set; } = null;
-    IdentityUser userIdentity;
+    UserApp userApp = new UserApp();
     decimal sumCost;
     string message;
     bool popupReceipt = false;
@@ -186,7 +186,7 @@
         if (user.Identity.IsAuthenticated)
         {
             string userIdClaimTypes = user.FindFirst(ClaimTypes.NameIdentifier).Value;
-            userIdentity.Id = userIdClaimTypes;
+            userApp.Id = userIdClaimTypes;
             transactCategoryList = TransactionCategoryAdapter.GetTransactionCategories(userIdClaimTypes);
         }
     }
@@ -194,25 +194,31 @@
     public void ShowPopupReciept(int id)
     {
         popupReceipt = true;
-        // egit 
+        model.IsActive = false;
+        model = TransactionCategoryAdapter.GetTransactionCategoryId(id);
     }
 
     public void ShowPopupExpenditure(int id)
     {
         popupExpenditure = true;
+        model.IsActive = true;
+        model = TransactionCategoryAdapter.GetTransactionCategoryId(id);
     }
 
     private void HandleValidSubmitPopupReciept()
     {
         var transactionType = new TransactionTypeDto();
-        transactionType.ID = 0;
         transactionType.Description = model.Description;
-        transactionType.IsActive = true;
+        transactionType.IsActive = false;
         var transactionTypeId = TransactionTypeAdapter.SaveTransactionType(transactionType);
 
-        model.User = userIdentity;
+        model.User = userApp;
+        model.TransactionType = transactionType;
         model.TransactionType.ID = transactionTypeId;
+        model.IsActive = false;
         TransactionCategoryAdapter.SaveTransactionCategory(model);
+        popupReceipt = false;
+        transactCategoryList = TransactionCategoryAdapter.GetTransactionCategories(userApp.Id);
     }
 
     private void HandleValidSubmitExpenditure()
@@ -220,12 +226,16 @@
         var transactionType = new TransactionTypeDto();
         transactionType.ID = 0;
         transactionType.Description = model.Description;
-        transactionType.IsActive = false;
+        transactionType.IsActive = true;
         var transactionTypeId = TransactionTypeAdapter.SaveTransactionType(transactionType);
 
-        model.User = userIdentity;
+        model.User = userApp;
+        model.TransactionType = transactionType;
         model.TransactionType.ID = transactionTypeId;
+        model.IsActive = true;
         TransactionCategoryAdapter.SaveTransactionCategory(model);
+        popupExpenditure = false;
+        transactCategoryList = TransactionCategoryAdapter.GetTransactionCategories(userApp.Id);
     }
 
     public void ClosePopup()
@@ -236,12 +246,14 @@
 
     private void DeleteExpenditure(int id)
     {
-
+        TransactionCategoryAdapter.DeleteTransactionCategory(id);
+        transactCategoryList = TransactionCategoryAdapter.GetTransactionCategories(userApp.Id);
     }
 
     private void DeleteReceipt(int id)
     {
-
+        TransactionCategoryAdapter.DeleteTransactionCategory(id);
+        transactCategoryList = TransactionCategoryAdapter.GetTransactionCategories(userApp.Id);
     }
 
     private void CleaningMessage()

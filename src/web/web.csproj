@@ -13,10 +13,11 @@
     <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="5.0.11" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="5.0.11" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="5.0.11" />
+    <PackageReference Include="Microsoft.Extensions.Localization" Version="5.0.11" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Data\EF\" />
+    <Folder Include="Resources\" />
   </ItemGroup>
 
 </Project>

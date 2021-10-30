@@ -51,7 +51,7 @@ namespace web.Data.Adapters
             }
 
             var TransactionTypeId = 0;
-            sql = string.Format(@"EXEC [sp_sp_SaveTransactionType] {0}, {1}, {2}",
+            sql = string.Format(@"EXEC [sp_SaveTransactionType] {0}, {1}, {2}",
             DataBaseHelper.RawSafeSqlString(model.ID),
             DataBaseHelper.SafeSqlString(model.Description),
             DataBaseHelper.SafeSqlString(model.IsActive));
@@ -65,7 +65,9 @@ namespace web.Data.Adapters
                 }
             }
 
-            return 0;
+            return TransactionTypeId;
         }
+
+      
     }
 }

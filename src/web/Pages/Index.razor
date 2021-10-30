@@ -1,7 +1,112 @@
 ﻿@page "/"
+@inject NavigationManager _navigationManager
+@inject IJSRuntime _jsRuntime
 
-<h1>Hello, world!</h1>
+<div class="alert alert-primary" role="alert">
+    <p class="text-right" style="color:blue;">@_localizer["Costs"]: @sumCost</p>
+</div>
+<div class="text-center">
+    <div>
+        <div class="jumbotron">
+            <h1 class="display-4">@_localizer["Welcome Axy"]</h1>
+            <EditForm Model="@model" OnValidSubmit="HandleValidSubmit" class="card-body">
+                <div class="form-group">
+                    <label>@_localizer["Date time"]</label>
+                    <input type="date" class="form-control" @bind-value="model.CurrentDate">
+                </div>
+                <div class="form-group">
+                    @if (!Approved)
+                    {
+                        <label for="formGroupExampleInput2">@_localizer["Sum"]</label>
+                        <InputNumber @bind-Value="model.SumReceipt" class="form-control" placeholder="Sum" />
+                    }
+                    else
+                    {
+                        <label for="formGroupExampleInput2">@_localizer["Sum"]</label>
+                        <InputNumber @bind-Value="model.SumExpenditure" class="form-control" placeholder="Sum" />
+                    }
 
-Welcome to your new app.
+                </div>
+                <div class="form-check form-switch">
+                    <input type="checkbox" class="form-check-input" @onclick="IsReceiptsExpenditures" id="flexSwitchCheckChecked" unchecked />
+                    <label class="form-check-label" for="flexSwitchCheckChecked" name="Model.IsIncome">@_localizer["Income/Outcome"] </label>
+                </div>
+                <br /><br />
+                <label for="formGroupExampleInput">@_localizer["Category"] *<span style="color:red">@message</span></label><br />
+                <div class="input-group mb-3">
+                    @if (!Approved)
+                    {
+                        <InputSelect class="custom-select" @bind-Value="model.ReceiptId" @onclick="(() => Reset())">
+                            <option value="">@_localizer["Choose an option"]</option>
+                            @foreach (var r in receiptModel)
+                                {
+                                <option value="@r.Id">@r.Name</option>
+                                }
+                        </InputSelect>
+                    }
+                    else
+                    {
 
-<SurveyPrompt Title="How is Blazor working for you?" />
+                        <InputSelect class="custom-select" @bind-Value="model.ExpenditureId" @onclick="(() => Reset())">
+                            <option value="">Choose an option</option>
+                            @foreach (var e in expenditureModel)
+                                {
+                                <option value="@e.Id">@e.Name</option>
+                                }
+                        </InputSelect>
+                    }
+
+                    <div class="input-group-append">
+                        <label class="input-group-text" for="inputGroupSelect02">
+                            @*<i @onclick="(() => Edit())" style='font-size:14px' class='far'>&#xf044;</i>*@
+                            <img @onclick="(() => Edit())" src="https://img.icons8.com/external-kiranshastry-solid-kiranshastry/21/000000/external-edit-interface-kiranshastry-solid-kiranshastry.png" />
+                        </label>
+
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="formGroupExampleInput2">@_localizer["Description"]</label>
+                    <InputText id="title" @bind-Value="model.DescriptionCategory" class="form-control" placeholder="@_localizer["Add description"]" />
+                </div>
+                <br />
+                <button type="submit" class="btn btn-outline-warning ">@_localizer["Save"]</button>
+            </EditForm>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <ul class="list-unstyled text-left">
+                    <li>@_localizer["Current balance"]: @model.CurrentBalance</li>
+                    <li>@_localizer["Savings for this month"]: @model.SavingForThisMounth</li>
+                    <li>@_localizer["Balance at the beginning of the month"]: @model.BalanceTheBeginningMounth</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@code{
+
+    [CascadingParameter]
+    private Task<AuthenticationState> authenticationStateTask { get; set; }
+
+    List<TransactionCategory> transactionCategories = new List<TransactionCategory>();
+    TransactionCategory model = new TransactionCategory();
+
+    public bool Approved = false;
+    string message;
+    decimal sumCost;
+    string userId;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await authenticationStateTask;
+        var user = authState.User;
+
+        if (user.Identity.IsAuthenticated)
+        {
+            userId = user.FindFirst(ClaimTypes.NameIdentifier).Value;
+        }
+    }
+}
