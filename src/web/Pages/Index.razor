@@ -66,8 +66,8 @@
                     </div>
                 </div>
                 <div class="form-group">
-                    <label for="formGroupExampleInput2">@_localizer["Description"]</label>
-                    <InputText id="title" @bind-Value="model.Note" class="form-control" placeholder="@_localizer["Add description"]" />
+                    <label for="formGroupExampleInput2">@_localizer["Note"]</label>
+                    <InputText id="title" @bind-Value="model.Note" class="form-control" placeholder="@_localizer["Add note"]" />
                 </div>
                 <br />
                 <button type="submit" class="btn btn-outline-warning ">@_localizer["Save"]</button>
@@ -129,8 +129,10 @@
             model.User.Id = userId;
             TransactionAdapter.SaveTransaction(model);
             model = newModel;
+            model.TransactionDate = DateTime.Now;
             transactionCategoryList = TransactionCategoryAdapter.GetTransactionCategories(userId).Where(z=>z.IsActive == false).ToList();
-            Approved = false;         
+            Approved = false;
+            
         }
     }
 

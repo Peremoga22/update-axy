@@ -52,7 +52,8 @@
     <thead>
         <tr>
             <th class="text-right">@_localizer["Sum"]</th>
-            <th class="text-right">@_localizer["Name"]</th>
+            <th class="text-right">@_localizer["Category"]</th>
+            <th class="text-right">@_localizer["Note"]</th>
             <th class="text-right">@_localizer["Date time"]</th>
             <th class="text-center">@_localizer["Actions"]</th>
         </tr>
@@ -61,16 +62,18 @@
         @foreach (var item in modelList)
         {
             <tr>
-                @if (item.IsActive)
+               @if (item.IsActive)
                 {
                     <td class="text-right" style="color:red">@item.Amount</td>
-                    <td class="text-right">@item.Note</td>
+                    <td class="text-right">@item.Description</td>
+                    <td class="text-right">@item.Note</td>                   
                     <td class="text-right">@item.TransactionDate.ToString("dd-MM-yyyy")</td>
 
                 }
                 else
                 {
                     <td class="text-right" href="#" style="color:green">@item.Amount</td>
+                    <td class="text-right">@item.Description</td>
                     <td class="text-right">@item.Note</td>
                     <td class="text-right">@item.TransactionDate.ToString("dd-MM-yyyy")</td>
 
@@ -89,12 +92,54 @@
         }
     </tbody>
 </table>
+@if (popupTransaction)
+{
+    <EditForm Model="@model" OnValidSubmit="HandleValidSubmitExpenditure" class="body  p-3 mb-5 rounded ">
+        <div class="modal" tabindex="-1" role="dialog" style="display:block;">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" style="color:green">Edit transaction!</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close" @onclick="(() => ClosePopup())">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <table class="table table-striped table-bordered table-sm">
+                            <tr class="form-group">
+                                <td>Note</td>
+                                <td><input class="form-control" type="text" @bind-value="model.Note" /></td>
+                            </tr>
+                            <tr class="form-group">
+                                <td>Amount</td>
+                                <td><input class="form-control" type="number" @bind-value="model.Amount" /></td>
+                            </tr>
+                            <tr class="form-group">
+                                <td>Category</td>
+                                <td><input class="form-control" type="text" @bind-value="model.Description" /></td>
+                            </tr>
+                            <tr class="form-group">
+                                <td>Note</td>
+                                <td><input class="form-control" type="date" @bind-value="model.TransactionDate" /></td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-primary">Save changes</button>
+                        <button type="button" class="btn btn-secondary" @onclick="(() => ClosePopup())" data-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </EditForm>
+}
 
 @code {
 
     [CascadingParameter]
     private Task<AuthenticationState> authenticationStateTask { get; set; }
     List<TransactionDto> modelList = new List<TransactionDto>();
+    List<TransactionCategoryDto> categoryList = new List<TransactionCategoryDto>();
     TransactionDto model = new TransactionDto();
 
     protected bool Collapsed = true;
@@ -102,6 +147,7 @@
     decimal sumCost;
     string DeleteDisabled { get; set; } = null;
     string userId;
+    bool popupTransaction = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -112,9 +158,8 @@
         {
             userId = user.FindFirst(ClaimTypes.NameIdentifier).Value;
             model.StartDate = DateTime.Now;
-            model.EndDate = DateTime.Now;
-
-            modelList = TransactionAdapter.GetTransaction(userId);
+            model.EndDate = DateTime.Now;           
+            modelList = TransactionAdapter.GetTransaction(userId);            
         }
     }
 
@@ -127,9 +172,15 @@
     public void ClosePopup()
     {
         popup = false;
+        popupTransaction = false;
     }
 
     private void HandleValidSubmit()
+    {
+
+    }
+
+    private void HandleValidSubmitExpenditure()
     {
 
     }
@@ -154,7 +205,8 @@
 
     protected void Edit(int id)
     {
-
+        popupTransaction = true;
+        model = TransactionAdapter.GetTransactionId(id);
     }
 
     public enum Filter

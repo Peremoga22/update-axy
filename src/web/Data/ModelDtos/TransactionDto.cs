@@ -22,6 +22,7 @@ namespace web.Data.ModelDtos
         public int TransactionTypeID { get; set; }
         public int TransactionCategoryID { get; set; }
         public bool IsActive { get; set; }
+        public string Description { get; set; }
         public virtual IdentityUser User { get; set; }
         public virtual TransactionCategoryDto TransactionCategory { get; set; } = new TransactionCategoryDto();
         public virtual TransactionTypeDto TransactionType { get; set; }

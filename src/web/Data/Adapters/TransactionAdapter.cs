@@ -33,7 +33,8 @@ namespace web.Data.Adapters
                         IsHidden = DataBaseHelper.GetBoolValueFromRowByName(item, "IsHidden"),
                         TransactionTypeID = DataBaseHelper.GetIntegerValueFromRowByName(item, "TransactionTypeID"),
                         TransactionCategoryID = DataBaseHelper.GetIntegerValueFromRowByName(item, "TransactionCategoryID"),
-                        IsActive = DataBaseHelper.GetBoolValueFromRowByName(item, "IsActive")
+                        IsActive = DataBaseHelper.GetBoolValueFromRowByName(item, "IsActive"),
+                        Description = DataBaseHelper.GetValueFromRowByName(item, "DescriptionCategory")
                     });
                 }
             }
@@ -79,6 +80,30 @@ namespace web.Data.Adapters
                 DataBaseHelper.RawSafeSqlString(id));
                 DataBaseHelper.RunSql(sql);
             }
+        }
+
+        public static TransactionDto GetTransactionId(int Id)
+        {
+            TransactionDto result = new TransactionDto();
+
+            var sql = string.Format(@"EXEC [sp_TransactionID] {0}",
+               DataBaseHelper.RawSafeSqlString(Id));
+            var sqlResult = DataBaseHelper.GetSqlResult(sql);
+
+            if (sqlResult.Rows.Count > 0)
+            {
+                result = new TransactionDto
+                {
+                    ID = DataBaseHelper.GetIntegerValueFromRowByName(sqlResult.Rows[0], " ID"),
+                    Amount = DataBaseHelper.GetDecimalValueFromRowByName(sqlResult.Rows[0], "Amount"),
+                    Note = DataBaseHelper.GetValueFromRowByName(sqlResult.Rows[0], "Note"),
+                    TransactionDate = DataBaseHelper.GetDateTimeValueFromRowByName(sqlResult.Rows[0], "TransactionDate"),
+                    IsActive =DataBaseHelper.GetBoolValueFromRowByName(sqlResult.Rows[0], "IsActive"),
+                    Description = DataBaseHelper.GetValueFromRowByName(sqlResult.Rows[0], "DescriptionCategory")
+                };
+            }
+
+            return result;
         }
     }
 }
