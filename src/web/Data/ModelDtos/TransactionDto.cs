@@ -17,7 +17,7 @@ namespace web.Data.ModelDtos
         public DateTime DateRemoved { get; set; }
         public bool IsHidden { get; set; }
         public virtual IdentityUser User { get; set; }
-        public virtual TransactionCategoryDto TransactionCategory { get; set; }
+        public virtual TransactionCategoryDto TransactionCategory { get; set; } = new TransactionCategoryDto();
         public virtual TransactionTypeDto TransactionType { get; set; }
     }
 }

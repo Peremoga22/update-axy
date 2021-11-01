@@ -30,7 +30,8 @@ namespace web.Data.Adapters
                         Description = DataBaseHelper.GetValueFromRowByName(item, "Description"),
                         IsActive = DataBaseHelper.GetBoolValueFromRowByName(item, "IsActive"),
                         ActiveTransactionsCount = DataBaseHelper.GetIntegerValueFromRowByName(item, "ActiveTransactionsCount"),
-                        ExpectedAmount = DataBaseHelper.GetDecimalValueFromRowByName(item, "ExpectedAmount")                       
+                        ExpectedAmount = DataBaseHelper.GetDecimalValueFromRowByName(item, "ExpectedAmount"),
+                        TransactionTypeID = DataBaseHelper.GetIntegerValueFromRowByName(item, "TransactionTypeID")
                     });
                 }
             }

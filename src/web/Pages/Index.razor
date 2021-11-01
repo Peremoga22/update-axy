@@ -37,7 +37,7 @@
                 <div class="input-group mb-3">
                     @if (!Approved)
                     {
-                        <InputSelect class="custom-select" @bind-Value="model.TransactionCategory" @onclick="(() => Reset())">
+                        <InputSelect class="custom-select" @bind-Value="model.TransactionCategory.ID" @onclick="(() => Reset())">
                             <option value="">@_localizer["Choose an option"]</option>
                             @foreach (var r in transactionCategoryList.Where(z=>z.IsActive == false).ToList())
                                 {
@@ -48,7 +48,7 @@
                     else
                     {
 
-                        <InputSelect class="custom-select" @bind-Value="model.TransactionCategory" @onclick="(() => Reset())">
+                        <InputSelect class="custom-select" @bind-Value="model.TransactionCategory.ID" @onclick="(() => Reset())">
                             <option value="">Choose an option</option>
                             @foreach (var e in transactionCategoryList.Where(z => z.IsActive == true).ToList())
                             {
@@ -94,7 +94,6 @@
 
     List<TransactionCategoryDto> transactionCategoryList = new List<TransactionCategoryDto>();
     TransactionDto model = new TransactionDto();
-
     public bool Approved = false;
     string message;
     decimal sumCost;
@@ -104,6 +103,7 @@
     {
         var authState = await authenticationStateTask;
         var user = authState.User;
+        model.TransactionDate = DateTime.Now;
 
         if (user.Identity.IsAuthenticated)
         {
@@ -114,7 +114,24 @@
 
     private void HandleValidSubmit()
     {
-
+        if (model.TransactionCategory.ID == 0)
+        {
+            message = "Please Choose an option!";
+        }
+        else
+        {
+            var transactionType = new TransactionTypeDto();
+            TransactionDto newModel = new TransactionDto();
+            model.User = new UserApp();
+            model.TransactionType = transactionType;
+            var getTransactCateory = transactionCategoryList.Where(z => z.ID == model.TransactionCategory.ID).FirstOrDefault();
+            transactionType.ID = getTransactCateory.TransactionTypeID;
+            model.User.Id = userId;
+            TransactionAdapter.SaveTransaction(model);
+            model = newModel;
+            transactionCategoryList = TransactionCategoryAdapter.GetTransactionCategories(userId).Where(z=>z.IsActive == false).ToList();
+            Approved = false;         
+        }
     }
 
     public void IsReceiptsExpenditures()
@@ -129,7 +146,6 @@
         }
 
         Approved = !Approved;
-        model.IsHidden = Approved;
     }
 
     protected void Edit()

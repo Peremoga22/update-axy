@@ -14,7 +14,8 @@ namespace web.Data.ModelDtos
         public bool IsActive { get; set; }
         public int ActiveTransactionsCount { get; set; }       
         public decimal ExpectedAmount { get; set; }
-        public virtual TransactionTypeDto TransactionType { get; set; }
+        public int TransactionTypeID { get; set; }
+        public virtual TransactionTypeDto TransactionType { get; set; } = new TransactionTypeDto();
         public virtual IdentityUser User { get; set; }
     }
 }
