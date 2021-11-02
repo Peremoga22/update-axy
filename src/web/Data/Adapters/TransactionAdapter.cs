@@ -46,8 +46,7 @@ namespace web.Data.Adapters
         public static void SaveTransaction(TransactionDto model)
         {
             var sql = string.Empty;
-            //var format = "yyyy-MM-dd HH:mm:ss:fff";
-            //var stringDateTransaction = model.TransactionDate.ToString(format);
+           
             if (model.ID > 0)
             {
                 sql = string.Format(@"EXEC [sp_SaveTransaction] {0}, {1}, {2} ,{3}, {4}, {5},{6}",
@@ -56,20 +55,23 @@ namespace web.Data.Adapters
                 DataBaseHelper.SafeSqlString(model.Note),
                 DataBaseHelper.SafeSqlString(model.TransactionDate),                
                 DataBaseHelper.SafeSqlString(model.User.Id),
-                DataBaseHelper.RawSafeSqlString(model.TransactionCategory.ID),
-                DataBaseHelper.RawSafeSqlString(model.TransactionType.ID));
+                DataBaseHelper.RawSafeSqlString(model.TransactionCategoryID),
+                DataBaseHelper.RawSafeSqlString(model.TransactionTypeID));
                 DataBaseHelper.RunSql(sql);               
             }
-                        
-            sql = string.Format(@"EXEC [sp_SaveTransaction] {0}, {1}, {2},{3}, {4}, {5},{6}",
-            DataBaseHelper.RawSafeSqlString(model.ID),
-            DataBaseHelper.RawSafeSqlString(model.Amount),
-            DataBaseHelper.SafeSqlString(model.Note),
-            DataBaseHelper.SafeSqlString(model.TransactionDate),           
-            DataBaseHelper.SafeSqlString(model.User.Id),
-            DataBaseHelper.RawSafeSqlString(model.TransactionCategory.ID),
-            DataBaseHelper.RawSafeSqlString(model.TransactionType.ID));
-            DataBaseHelper.RunSql(sql);           
+            else
+            {
+                sql = string.Format(@"EXEC [sp_SaveTransaction] {0}, {1}, {2},{3}, {4}, {5},{6}",
+                DataBaseHelper.RawSafeSqlString(model.ID),
+                DataBaseHelper.RawSafeSqlString(model.Amount),
+                DataBaseHelper.SafeSqlString(model.Note),
+                DataBaseHelper.SafeSqlString(model.TransactionDate),
+                DataBaseHelper.SafeSqlString(model.User.Id),
+                DataBaseHelper.RawSafeSqlString(model.TransactionCategory.ID),
+                DataBaseHelper.RawSafeSqlString(model.TransactionType.ID));
+                DataBaseHelper.RunSql(sql);
+            }                      
+                    
         }
 
         public static void DeleteTransaction(int id)

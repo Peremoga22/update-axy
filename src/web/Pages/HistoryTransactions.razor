@@ -13,7 +13,7 @@
 </div>
 <div class="@(Collapsed? "collapse": "" )">
 
-    <EditForm Model="@model" OnValidSubmit="HandleValidSubmit" class="body  p-3 mb-5 rounded ">
+    <EditForm Model="@model" OnValidSubmit="HandleValidSubmitFilter" class="body  p-3 mb-5 rounded ">
         <DataAnnotationsValidator />
         <div>
             <div class="row d-flex">
@@ -94,7 +94,7 @@
 </table>
 @if (popupTransaction)
 {
-    <EditForm Model="@model" OnValidSubmit="HandleValidSubmitExpenditure" class="body  p-3 mb-5 rounded ">
+    <EditForm Model="@model" OnValidSubmit="HandleValidSubmitPopup" class="body  p-3 mb-5 rounded ">
         <div class="modal" tabindex="-1" role="dialog" style="display:block;">
             <div class="modal-dialog" role="document">
                 <div class="modal-content">
@@ -116,7 +116,15 @@
                             </tr>
                             <tr class="form-group">
                                 <td>Category</td>
-                                <td><input class="form-control" type="text" @bind-value="model.Description" /></td>
+                                <td>
+                                    <InputSelect class="custom-select" @bind-Value="model.TransactionCategoryID">
+                                        <option value="">Choose an option</option>
+                                        @foreach (var e in categoryList.ToList())
+                                         {
+                                            <option value="@e.ID">@e.Description</option>
+                                         }
+                                    </InputSelect>
+                                </td>                                                             
                             </tr>
                             <tr class="form-group">
                                 <td>Note</td>
@@ -141,13 +149,14 @@
     List<TransactionDto> modelList = new List<TransactionDto>();
     List<TransactionCategoryDto> categoryList = new List<TransactionCategoryDto>();
     TransactionDto model = new TransactionDto();
-
+    UserApp user = new UserApp();
     protected bool Collapsed = true;
     bool popup = false;
     decimal sumCost;
     string DeleteDisabled { get; set; } = null;
     string userId;
     bool popupTransaction = false;
+    int editPopupId;
 
     protected override async Task OnInitializedAsync()
     {
@@ -158,8 +167,8 @@
         {
             userId = user.FindFirst(ClaimTypes.NameIdentifier).Value;
             model.StartDate = DateTime.Now;
-            model.EndDate = DateTime.Now;           
-            modelList = TransactionAdapter.GetTransaction(userId);            
+            model.EndDate = DateTime.Now;
+            modelList = TransactionAdapter.GetTransaction(userId);
         }
     }
 
@@ -175,14 +184,24 @@
         popupTransaction = false;
     }
 
-    private void HandleValidSubmit()
+    private void HandleValidSubmitFilter()
     {
 
     }
 
-    private void HandleValidSubmitExpenditure()
+    private void HandleValidSubmitPopup()
     {
+        var transactionType = new TransactionTypeDto();
+        model.TransactionType = transactionType;
+        user.Id = userId;
+        model.User = user;
+        model.ID = editPopupId;        
+        var getTransactCategory = TransactionAdapter.GetTransaction(userId).Where(z=>z.ID == model.ID).FirstOrDefault();       
+        model.TransactionTypeID = getTransactCategory.TransactionTypeID;
+        TransactionAdapter.SaveTransaction(model);
 
+        modelList = TransactionAdapter.GetTransaction(userId).ToList();
+        popupTransaction = false;
     }
 
     private void Collaps()
@@ -206,7 +225,12 @@
     protected void Edit(int id)
     {
         popupTransaction = true;
+        editPopupId = id;
         model = TransactionAdapter.GetTransactionId(id);
+        var getTransactCategory = TransactionAdapter.GetTransaction(userId).Where(z => z.ID == editPopupId).FirstOrDefault();
+        model.TransactionCategoryID = getTransactCategory.TransactionCategoryID;
+        categoryList = TransactionCategoryAdapter.GetTransactionCategories(userId).Where(z=>z.IsActive == model.IsActive).ToList();
+        
     }
 
     public enum Filter
