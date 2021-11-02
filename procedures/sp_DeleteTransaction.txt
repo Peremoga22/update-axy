@@ -1,0 +1,23 @@
+USE [update-axy]
+GO
+/****** Object:  StoredProcedure [dbo].[sp_DeleteTransaction]    Script Date: 02/11/2021 09:59:02 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+-- =============================================
+-- Author:		
+-- Create date: 
+-- Description:
+-- =============================================
+Create procedure [dbo].[sp_DeleteTransaction] 
+		@Id int		
+AS
+BEGIN	
+	SET NOCOUNT ON;	
+    BEGIN 	
+		 Delete from Transactions
+		 where ID = @Id 
+	END	
+	
+END

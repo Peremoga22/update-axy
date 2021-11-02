@@ -1,0 +1,60 @@
+USE [update-axy]
+GO
+/****** Object:  StoredProcedure [dbo].[sp_SaveTransactionType]    Script Date: 02/11/2021 10:03:40 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+-- =============================================
+-- Author:		
+-- Create date: 
+-- Description:
+-- =============================================
+Create procedure [dbo].[sp_SaveTransactionType] 
+		@Id int,		
+		@Description nvarchar(max),	
+		@IsActive bit		
+AS
+BEGIN	
+	--SET NOCOUNT ON;
+	SET IDENTITY_INSERT TransactionTypes Off	
+
+	if(@Id > 0)
+
+	begin
+		Update TransactionTypes
+		SET 		
+		Description = @Description,	
+		IsActive =@IsActive,
+		DateCreated = GETDATE(),
+		DateModified = GETDATE(),
+		IsImported = 1,
+		NeedToReimport = 1,
+		ImportDate = GETDATE()
+		WHERE ID =@Id
+ 	end
+	else
+    BEGIN 	
+		  INSERT Into TransactionTypes 
+		  (			 
+			  Description,
+			  IsActive,
+			  DateCreated,
+			  DateModified,
+			  IsImported,
+			  NeedToReimport,
+			  ImportDate			
+		  )
+		  Values
+		  (	 
+		      @Description,
+			  @IsActive,
+			  GETDATE(),
+			  GETDATE(),
+			  1,
+			  1,
+			  GETDATE()			  	 
+		  )		
+		  Select SCOPE_IDENTITY() As ID 
+	END		
+END

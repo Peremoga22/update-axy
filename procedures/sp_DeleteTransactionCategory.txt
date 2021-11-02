@@ -1,0 +1,23 @@
+USE [update-axy]
+GO
+/****** Object:  StoredProcedure [dbo].[sp_DeleteTransactionCategory]    Script Date: 02/11/2021 09:59:41 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+-- =============================================
+-- Author:		
+-- Create date: 
+-- Description:
+-- =============================================
+Create procedure [dbo].[sp_DeleteTransactionCategory] 
+		@Id int		
+AS
+BEGIN	
+	SET NOCOUNT ON;	
+    BEGIN 	
+		 Delete from TransactionCategories
+		 where ID = @Id 
+	END	
+	
+END

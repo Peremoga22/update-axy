@@ -1,0 +1,84 @@
+USE [update-axy]
+GO
+/****** Object:  StoredProcedure [dbo].[sp_SaveTransaction]    Script Date: 02/11/2021 10:01:54 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+-- =============================================
+-- Author:		
+-- Create date: 
+-- Description:
+-- =============================================
+Create  procedure [dbo].[sp_SaveTransaction] 
+		@Id int,		
+		@Amount decimal(18,2),	
+		@Note nvarchar(max),
+		@TransactionDate datetime2,		
+		@UserId nvarchar(max),
+		@TransactionCategoryID int,
+		@TransactionTypeID int		
+AS
+BEGIN	
+	--SET NOCOUNT ON;
+	SET IDENTITY_INSERT Transactions Off	
+
+	if(@Id > 0)
+
+	begin
+		Update Transactions
+		SET 	
+		Amount = @Amount,
+		Note = @Note,
+		TransactionDate = @TransactionDate,	
+		IsRemoved = 0,
+		IsHidden =0,
+		UserId = @UserId,
+		TransactionCategoryID =@TransactionCategoryID,
+		TransactionTypeID = @TransactionTypeID,
+		DateCreated = GETDATE(),
+		DateModified = GETDATE(),
+		IsImported = 0,
+		NeedToReimport =0,
+		ImportDate = GETDATE()
+		WHERE ID =@Id
+ 	end
+	else
+    BEGIN 	
+		  INSERT Into Transactions 
+		  (			 
+			  Amount,
+			  Note,
+			  TransactionDate,
+			  IsRemoved,
+			  DateRemoved,
+			  IsHidden,
+			  UserId,
+			  TransactionCategoryID,
+			  TransactionTypeID,
+			  DateCreated,
+			  DateModified,
+			  IsImported,
+			  NeedToReimport,
+			  ImportDate
+		  )
+		  Values
+		  (	 
+		      @Amount,
+			  @Note,
+			  @TransactionDate,
+			  0,
+			  '',
+			  0,
+			  @UserId,
+			  @TransactionCategoryID,
+			  @TransactionTypeID,
+			  GETDATE(),
+			  GETDATE(),
+			  0,
+			  0,
+			  GETDATE()			  	 
+		  )		
+		  Select SCOPE_IDENTITY() As ID 
+	END		
+END
