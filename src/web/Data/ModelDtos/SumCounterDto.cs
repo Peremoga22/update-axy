@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace web.Data.ModelDtos
 {
-    public class SumCounter
+    public class SumCounterDto
     {
         public int ID { get; set; }
         public decimal CurrentBalance { get; set; }

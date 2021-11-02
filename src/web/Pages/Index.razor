@@ -77,9 +77,9 @@
         <div class="card">
             <div class="card-body">
                 <ul class="list-unstyled text-left">
-                    <li>@_localizer["Current balance"]: </li>
-                    <li>@_localizer["Savings for this month"]: </li>
-                    <li>@_localizer["Balance at the beginning of the month"]: </li>
+                    <li>@_localizer["Current balance"]: @modelSum.CurrentBalance</li>
+                    <li>@_localizer["Savings for this month"]: @modelSum.SavingForThisMounth</li>
+                    <li>@_localizer["Balance at the beginning of the month"]:@modelSum.BalanceTheBeginningMounth  </li>
                 </ul>
             </div>
         </div>
@@ -94,6 +94,7 @@
 
     List<TransactionCategoryDto> transactionCategoryList = new List<TransactionCategoryDto>();
     TransactionDto model = new TransactionDto();
+    SumCounterDto modelSum = new SumCounterDto();
     public bool Approved = false;
     string message;
     decimal sumCost;
@@ -108,7 +109,22 @@
         if (user.Identity.IsAuthenticated)
         {
             userId = user.FindFirst(ClaimTypes.NameIdentifier).Value;
-            transactionCategoryList = TransactionCategoryAdapter.GetTransactionCategories(userId);
+            //transactionCategoryList = TransactionCategoryAdapter.GetTransactionCategories(userId);
+            //foreach(var item in transactionCategoryList)
+            //{
+            //    if(item.IsActive == false)
+            //    {
+            //        modelSum.CurrentBalance = SumCounterAdapter.GetCurrentSum(item.TransactionTypeID);
+            //        modelSum.BalanceTheBeginningMounth = SumCounterAdapter.GetCurrentSum(item.TransactionTypeID);
+            //    }
+            //    else
+            //    {
+            //        sumCost = SumCounterAdapter.GetCurrentSum(item.TransactionTypeID);
+            //    }
+            //}
+
+            //modelSum.SavingForThisMounth = modelSum.CurrentBalance - sumCost;
+            ShowSum();
         }
     }
 
@@ -132,7 +148,7 @@
             model.TransactionDate = DateTime.Now;
             transactionCategoryList = TransactionCategoryAdapter.GetTransactionCategories(userId).Where(z=>z.IsActive == false).ToList();
             Approved = false;
-            
+            ShowSum();
         }
     }
 
@@ -158,5 +174,24 @@
     public void Reset()
     {
         message = "";
+    }
+
+    private void ShowSum()
+    {
+        transactionCategoryList = TransactionCategoryAdapter.GetTransactionCategories(userId);
+        foreach (var item in transactionCategoryList)
+        {
+            if (item.IsActive == false)
+            {
+                modelSum.CurrentBalance = SumCounterAdapter.GetCurrentSum(item.TransactionTypeID);
+                modelSum.BalanceTheBeginningMounth = SumCounterAdapter.GetCurrentSum(item.TransactionTypeID);
+            }
+            else
+            {
+                sumCost = SumCounterAdapter.GetCurrentSum(item.TransactionTypeID);
+            }
+        }
+
+        modelSum.SavingForThisMounth = modelSum.CurrentBalance - sumCost;
     }
 }

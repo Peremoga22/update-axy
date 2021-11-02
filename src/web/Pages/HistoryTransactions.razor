@@ -185,6 +185,40 @@
 
     private void HandleValidSubmitFilter()
     {
+        if (model.Filter == "GetAll" || string.IsNullOrEmpty(model.Filter))
+        {
+            model.Filter = "GetAll";
+            var count = 0;
+            decimal sum = 0;
+            decimal expenditureSum = 0;
+            var modelListShow = new List<TransactionDto>();
+            modelList = TransactionAdapter.GetTransaction(userId).Where(z => !string.IsNullOrEmpty(z.Description)).ToList();
+            foreach (var item in modelList)
+            {
+                if(item.IsActive == false)
+                {
+                    sum = SumCounterAdapter.GetCurrentSum((int)item.TransactionTypeID);
+                }
+                else
+                {
+                    expenditureSum = SumCounterAdapter.GetCurrentSum((int)item.TransactionTypeID);
+                }
+
+              
+                if (sum > 0)
+                {
+                    modelList[count].Amount = sum;
+
+                }
+
+                if (expenditureSum > 0)
+                {
+                    modelList[count].Amount = expenditureSum;
+                }
+
+                count++;
+            }
+        }
 
     }
 
@@ -194,8 +228,8 @@
         model.TransactionType = transactionType;
         user.Id = userId;
         model.User = user;
-        model.ID = editPopupId;        
-        var getTransactCategory = TransactionAdapter.GetTransaction(userId).Where(z=>z.ID == model.ID).FirstOrDefault();       
+        model.ID = editPopupId;
+        var getTransactCategory = TransactionAdapter.GetTransaction(userId).Where(z=>z.ID == model.ID).FirstOrDefault();
         model.TransactionTypeID = getTransactCategory.TransactionTypeID;
         TransactionAdapter.SaveTransaction(model);
 
@@ -229,7 +263,7 @@
         var getTransactCategory = TransactionAdapter.GetTransaction(userId).Where(z => z.ID == editPopupId).FirstOrDefault();
         model.TransactionCategoryID = getTransactCategory.TransactionCategoryID;
         categoryList = TransactionCategoryAdapter.GetTransactionCategories(userId).Where(z=>z.IsActive == model.IsActive).ToList();
-        
+
     }
 
     public enum Filter
