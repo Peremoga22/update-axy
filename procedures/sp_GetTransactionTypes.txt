@@ -1,0 +1,29 @@
+USE [update-axy]
+GO
+/****** Object:  StoredProcedure [dbo].[sp_GetTransaction]    Script Date: 02/11/2021 21:00:24 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+-- =============================================
+-- Author:		
+-- Create date: 
+-- Description:
+-- =============================================
+Create procedure [dbo].[sp_GetTransactionTypes] 
+	@UserId nvarchar(max)
+AS
+BEGIN
+
+	SET NOCOUNT ON;
+	BEGIN 
+	Select 
+		ID,
+		Description,		
+		IsActive			
+	From TransactionTypes	
+	END 
+		
+END
+
+ 

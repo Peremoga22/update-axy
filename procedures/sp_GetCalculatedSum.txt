@@ -1,0 +1,28 @@
+USE [update-axy]
+GO
+/****** Object:  StoredProcedure [dbo].[sp_GetTransaction]    Script Date: 02/11/2021 22:37:25 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+-- =============================================
+-- Author:		
+-- Create date: 
+-- Description:
+-- =============================================
+Create  procedure [dbo].[sp_GetCalculatedSum] 
+	@TransactionTypeID int
+AS
+BEGIN
+	
+	SET NOCOUNT ON;
+	BEGIN 
+	SELECT	  
+	    Sum(Amount) as CurrentSum 
+		from Transactions tr		
+		where tr.TransactionTypeID= @TransactionTypeID
+	END 
+		
+END
+
+
