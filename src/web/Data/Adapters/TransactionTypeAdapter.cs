@@ -16,7 +16,7 @@ namespace web.Data.Adapters
             var result = new List<TransactionTypeDto>();
 
             string sql = null;
-            sql = string.Format(@"exec [sp_GetTransactionType]  {0}",
+            sql = string.Format(@"exec [sp_GetTransactionTypes]  {0}",
             DataBaseHelper.SafeSqlString(userId));
             var sqlResult = DataBaseHelper.GetSqlResult(sql);
 

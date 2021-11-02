@@ -181,6 +181,7 @@
     bool popupExpenditure = false;
     protected override async Task OnInitializedAsync()
     {
+
         var authState = await authenticationStateTask;
         var user = authState.User;
         if (user.Identity.IsAuthenticated)
@@ -188,6 +189,7 @@
             string userIdClaimTypes = user.FindFirst(ClaimTypes.NameIdentifier).Value;
             userApp.Id = userIdClaimTypes;
             transactCategoryList = TransactionCategoryAdapter.GetTransactionCategories(userIdClaimTypes);
+            CreateTransactTypes();
         }
     }
 
@@ -206,15 +208,12 @@
     }
 
     private void HandleValidSubmitPopupReciept()
-    {
-        var transactionType = new TransactionTypeDto();
-        transactionType.Description = model.Description;
-        transactionType.IsActive = false;
-        var transactionTypeId = TransactionTypeAdapter.SaveTransactionType(transactionType);
+    {    
+        var transactionType = TransactionTypeAdapter.GetTransactionType(userApp.Id).Where(z=>z.IsActive == false).FirstOrDefault();
 
         model.User = userApp;
         model.TransactionType = transactionType;
-        model.TransactionType.ID = transactionTypeId;
+        model.TransactionType.ID = transactionType.ID;
         model.IsActive = false;
         TransactionCategoryAdapter.SaveTransactionCategory(model);
         popupReceipt = false;
@@ -223,15 +222,11 @@
 
     private void HandleValidSubmitExpenditure()
     {
-        var transactionType = new TransactionTypeDto();
-        transactionType.ID = 0;
-        transactionType.Description = model.Description;
-        transactionType.IsActive = true;
-        var transactionTypeId = TransactionTypeAdapter.SaveTransactionType(transactionType);
-
+        var transactionType = TransactionTypeAdapter.GetTransactionType(userApp.Id).Where(z => z.IsActive == true).FirstOrDefault();
+        
         model.User = userApp;
         model.TransactionType = transactionType;
-        model.TransactionType.ID = transactionTypeId;
+        model.TransactionType.ID = transactionType.ID;
         model.IsActive = true;
         TransactionCategoryAdapter.SaveTransactionCategory(model);
         popupExpenditure = false;
@@ -259,5 +254,28 @@
     private void CleaningMessage()
     {
         message = "";
+    }
+
+    private void CreateTransactTypes()
+    {
+        var checkTransactionTypes = TransactionTypeAdapter.GetTransactionType(userApp.Id).ToList();
+
+        foreach(var item in checkTransactionTypes)
+        {
+            if(item.Description == "Income" || item.Description == "Outcome")
+            {
+                return;
+            }
+        }
+
+        var transactionTypeIncome = new TransactionTypeDto();
+        transactionTypeIncome.Description = "Income";
+        transactionTypeIncome.IsActive = false;
+        TransactionTypeAdapter.SaveTransactionType(transactionTypeIncome);
+
+        var transactionTypeOutCome = new TransactionTypeDto();
+        transactionTypeOutCome.Description = "Outcome";
+        transactionTypeOutCome.IsActive = true;
+        TransactionTypeAdapter.SaveTransactionType(transactionTypeOutCome);
     }
 }
