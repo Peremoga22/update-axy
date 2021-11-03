@@ -1,7 +1,171 @@
 ﻿@page "/report-transaction"
+@inject IStringLocalizer<App> _localizer
+@using web.Data.ModelDtos
+@inject IJSRuntime _jsRuntime;
+@using System.Timers
+@implements IDisposable
 
-<h3>ReportTransaction</h3>
 
-@code {
+<div class="alert alert-primary" role="alert" @onclick="Collaps">
+    <p class="text-right" style="color:blue;">
+        @_localizer["Costs"]: @sumCost
+        <i class="fa fa-bar-chart text-left p-2" style="font-size:36px; text-align:left;"></i>
+    </p>
+</div>
+<div>
+    <div class="@(Collapsed? "collapse": "" )">
 
-}
+        <EditForm Model="@model" OnValidSubmit="HandleValidSubmit" class="body  p-3 mb-5 rounded ">
+            <DataAnnotationsValidator />
+            <div>
+                <div class="row d-flex">
+                    <div class="col-lg-12 form-group">
+                        <label for="additional">@_localizer["Start Date"]:</label>
+                        <input type="date" class="form-control" @bind-value="model.StartDate" />
+                    </div>
+                </div>
+                <div class="row d-flex">
+                    <div class="col-lg-12 form-group">
+                        <label for="additional">@_localizer["End Date"]:</label>
+                        <input type="date" class="form-control" @bind-value="model.EndDate" />
+                    </div>
+                </div>
+                <div class="row d-flex">
+                    <div class="col-lg-12 form-group">
+                        <label for="additional">@_localizer["Choose an option"]:</label>
+                        <InputSelect @bind-Value="model.Filter" class="form-control">
+                            @foreach (var item in Enum.GetValues(typeof(Filter)))
+                            {
+                                <option value="@item">@item</option>
+                            }
+                        </InputSelect>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="ml-lg-3 m-3">
+                    <button type="submit" class="btn btn-primary">&nbsp;@_localizer["Search"]&nbsp;</button>
+                    <NavLink class="btn btn-outline-secondary" @onclick="ResetSearch">&nbsp;@_localizer["Reset"]&nbsp;</NavLink>
+                </div>
+            </div>
+        </EditForm>
+    </div>
+    @if (income > 0)
+    {
+        <div class="jumbotron">
+            <div class="well span6" style="padding-top: 50px">
+                <h3 class="text-center">
+                    @_localizer["Savings for this month"]: @income
+                </h3>
+            </div>
+            <div class="well span6" style="padding-top: 50px">
+                <h3 class="text-center">
+                    @_localizer["Balans!"]
+                </h3>
+            </div>
+
+            <div id="chartdiv"></div>
+            <br />
+            <div class="well span6" style="padding-top: 50px">
+                <h3 class="text-center">
+                    @_localizer["Expenditure!"]
+                </h3>
+            </div>
+            <div id="chartdiv1"></div>
+            <br />
+            <div class="well span6" style="padding-top: 50px">
+                <h3 class="text-center">
+                    @_localizer["Receipt!"]
+                </h3>
+            </div>
+            <div id="chartdiv2"></div>
+        </div>
+    }
+    else
+    {
+        <h2 class="text-center mt-5" style="color:blue;">@_localizer["The balance amount is zero."]</h2>
+    }
+
+</div>
+
+
+    @code {
+        [CascadingParameter]
+        private Task<AuthenticationState> authenticationStateTask { get; set; }
+        TransactionDto model = new TransactionDto();
+        List<TransactionDto> modelList = new List<TransactionDto>();
+        SumCounterDto modelSum = new SumCounterDto();
+        List<SumBalance> sumBalance = new List<SumBalance>();
+
+        decimal sumCost;
+        bool Collapsed = true;
+
+        private Timer timerObj = new(1000);
+
+        int count = 1;
+        decimal income = 0;
+        decimal outcome = 0;
+        string userId;
+
+        protected override async Task OnInitializedAsync()
+        {
+            income = 1;
+            model.StartDate = DateTime.Now;
+            model.EndDate = DateTime.Now;
+        }
+
+        protected override void OnAfterRender(bool firstRender)
+        {
+
+            if (count == 1)
+            {
+                GeneratePieChartBlazorBalans();
+            }
+        }
+
+        private async Task GeneratePieChartBlazorBalans()
+        {
+            income = 1;
+            var id = 62;
+            var idEx = 63;
+            var sumReceipt = SumCounterAdapter.GetCurrentSum(id);
+            var sumExpenditure = SumCounterAdapter.GetCurrentSum(idEx);
+
+            var remainderSum = sumReceipt - sumExpenditure;
+
+
+            sumBalance.Add(new SumBalance() { Note = "Outcome", SumReceipt = sumReceipt, SumExpenditure = remainderSum });
+            sumBalance.Add(new SumBalance() { Note = " Income", SumReceipt = sumReceipt, SumExpenditure = 0 });
+
+
+
+            await _jsRuntime.InvokeVoidAsync("GeneralPieChartBalans", sumBalance);
+        }
+
+        private void HandleValidSubmit()
+        {
+
+        }
+
+        public void ResetSearch()
+        {
+
+        }
+
+        private void Collaps()
+        {
+            Collapsed = !Collapsed;
+        }
+
+        public enum Filter
+        {
+            GetAll,
+            Income,
+            OutCome
+        }
+
+        public void Dispose()
+        {
+            timerObj?.Dispose();
+        }
+    }
