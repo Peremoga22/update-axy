@@ -29,7 +29,7 @@ function GeneralPieChartExpenditure(sumList) {
     var series = chart.series.push(new am4charts.PieSeries3D());
     series.dataFields.value = "sumPercentage2";
 
-    series.dataFields.category = "nameCategory";
+    series.dataFields.category = "note";
 }
 
 function GeneralPieChartReceipt(sumList) {
@@ -46,5 +46,5 @@ function GeneralPieChartReceipt(sumList) {
     var series = chart.series.push(new am4charts.PieSeries3D());
     series.dataFields.value = "sumPercentage3";
 
-    series.dataFields.category = "nameCategory";
+    series.dataFields.category = "note";
 }

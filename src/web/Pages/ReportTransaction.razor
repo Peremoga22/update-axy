@@ -94,14 +94,14 @@
         private Task<AuthenticationState> authenticationStateTask { get; set; }
         TransactionDto model = new TransactionDto();
         List<TransactionDto> modelList = new List<TransactionDto>();
-        SumCounterDto modelSum = new SumCounterDto();
         List<SumBalance> sumBalance = new List<SumBalance>();
+        List<SumExpenditure> sumExpenditures = new List<SumExpenditure>();
+        List<SumReceipt> sumReceipts = new List<SumReceipt>();
 
         decimal sumCost;
         bool Collapsed = true;
 
         private Timer timerObj = new(1000);
-
         int count = 1;
         decimal income = 0;
         decimal outcome = 0;
@@ -109,9 +109,21 @@
 
         protected override async Task OnInitializedAsync()
         {
-            income = 1;
             model.StartDate = DateTime.Now;
             model.EndDate = DateTime.Now;
+            var authState = await authenticationStateTask;
+            var user = authState.User;
+
+            if (user.Identity.IsAuthenticated)
+            {
+                income = 1;
+                userId = user.FindFirst(ClaimTypes.NameIdentifier).Value;
+                var transactionCategoryList = TransactionCategoryAdapter.GetTransactionCategories(userId);
+                foreach (var item in transactionCategoryList)
+                {
+                    sumCost = SumCounterAdapter.GetCurrentSum(item.TransactionTypeID);
+                }
+            }
         }
 
         protected override void OnAfterRender(bool firstRender)
@@ -119,28 +131,63 @@
 
             if (count == 1)
             {
-                GeneratePieChartBlazorBalans();
+                GeneratePieChartBlazorBalance();
+                GeneratePieChartBlazorExpenditure();
+                GeneratePieChartBlazorReceipt();
             }
         }
 
-        private async Task GeneratePieChartBlazorBalans()
+        private async Task GeneratePieChartBlazorBalance()
         {
             income = 1;
-            var id = 62;
-            var idEx = 63;
-            var sumReceipt = SumCounterAdapter.GetCurrentSum(id);
-            var sumExpenditure = SumCounterAdapter.GetCurrentSum(idEx);
-
+            var typeId = GetTransactionType(false);
+            var expenditureId = GetTransactionType(true);
+            var sumReceipt = SumCounterAdapter.GetCurrentSum(typeId);
+            var sumExpenditure = SumCounterAdapter.GetCurrentSum(expenditureId);
             var remainderSum = sumReceipt - sumExpenditure;
-
-
             sumBalance.Add(new SumBalance() { Note = "Outcome", SumReceipt = sumReceipt, SumExpenditure = remainderSum });
             sumBalance.Add(new SumBalance() { Note = " Income", SumReceipt = sumReceipt, SumExpenditure = 0 });
 
-
-
             await _jsRuntime.InvokeVoidAsync("GeneralPieChartBalans", sumBalance);
         }
+
+        private async Task GeneratePieChartBlazorExpenditure()
+        {
+            var typeId = GetTransactionType(false);
+            var expenditureId = GetTransactionType(true);
+            var sumReceipt = SumCounterAdapter.GetCurrentSum(typeId);
+            var sumExpenditure = SumCounterAdapter.GetCurrentSum(expenditureId);
+            var modelList = TransactionAdapter.GetTransaction(userId).Where(z => z.IsActive == true).ToList();
+            foreach (var item in modelList)
+            {
+                if (sumReceipt > 0)
+                {
+                    sumExpenditures.Add(new SumExpenditure() { Note = item.Note, SumReceipt = item.Amount, SumExpenditure = sumExpenditure });
+                }
+
+            }
+
+            await _jsRuntime.InvokeVoidAsync("GeneralPieChartExpenditure", sumExpenditures);
+        }
+
+        private async Task GeneratePieChartBlazorReceipt()
+        {
+            var typeId = GetTransactionType(false);
+            var expenditureId = GetTransactionType(true);
+            var sumReceipt = SumCounterAdapter.GetCurrentSum(typeId);
+            var sumExpenditure = SumCounterAdapter.GetCurrentSum(expenditureId);
+            var modelList = TransactionAdapter.GetTransaction(userId).Where(z => z.IsActive == false).ToList();
+            foreach (var item in modelList)
+            {
+                if (sumReceipt > 0)
+                {
+                    sumReceipts.Add(new SumReceipt() { Note = item.Note, SumReceipt = item.Amount, SumExpenditure = 0 });                   
+                }
+            }
+
+            await _jsRuntime.InvokeVoidAsync("GeneralPieChartReceipt", sumReceipts);
+        }
+
 
         private void HandleValidSubmit()
         {
@@ -167,5 +214,12 @@
         public void Dispose()
         {
             timerObj?.Dispose();
+        }
+
+        private int GetTransactionType(bool isCheck)
+        {
+            var tempId = TransactionAdapter.GetTransaction(userId).Where(z => z.IsActive == isCheck).Select(z => z.TransactionTypeID).FirstOrDefault();
+
+            return tempId;
         }
     }
