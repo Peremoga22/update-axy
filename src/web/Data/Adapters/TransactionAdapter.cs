@@ -42,6 +42,46 @@ namespace web.Data.Adapters
             return result;
         }
 
+        public static List<TransactionDto> GetTransactionList(TransactionDto model)
+        {
+            var result = new List<TransactionDto>();
+
+            var startDate = "yyyy-MM-dd HH:mm:ss:fff";
+            var startDateString = model.StartDate.ToString(startDate);
+            var endDate = "yyyy-MM-dd HH:mm:ss:fff";
+            var endDateString = model.EndDate.ToString(endDate);
+            string sql = null;
+
+            sql = string.Format(@"exec [sp_GetTransactionFilter] {0}, {1},{2},{3},{4}",
+            DataBaseHelper.SafeSqlString(model.User.Id),
+            DataBaseHelper.SafeSqlString(startDateString),
+            DataBaseHelper.SafeSqlString(endDateString),
+            DataBaseHelper.SafeSqlString(model.Filter),
+            DataBaseHelper.SafeSqlString(model.IsActive));
+            var sqlResult = DataBaseHelper.GetSqlResult(sql);
+
+            if (sqlResult.Rows.Count > 0)
+            {
+                foreach (DataRow item in sqlResult.Rows)
+                {
+                    result.Add(new TransactionDto
+                    {
+                        ID = DataBaseHelper.GetIntegerValueFromRowByName(item, "ID"),
+                        Amount = DataBaseHelper.GetDecimalValueFromRowByName(item, "Amount"),
+                        Note = DataBaseHelper.GetValueFromRowByName(item, "Note"),
+                        TransactionDate = DataBaseHelper.GetDateTimeValueFromRowByName(item, "TransactionDate"),
+                        IsHidden = DataBaseHelper.GetBoolValueFromRowByName(item, "IsHidden"),
+                        TransactionTypeID = DataBaseHelper.GetIntegerValueFromRowByName(item, "TransactionTypeID"),
+                        TransactionCategoryID = DataBaseHelper.GetIntegerValueFromRowByName(item, "TransactionCategoryID"),
+                        IsActive = DataBaseHelper.GetBoolValueFromRowByName(item, "IsActive"),
+                        Description = DataBaseHelper.GetValueFromRowByName(item, "DescriptionCategory")                       
+
+                    });
+                }
+            }
+
+            return result;
+        }
 
         public static void SaveTransaction(TransactionDto model)
         {

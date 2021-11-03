@@ -168,6 +168,12 @@
             model.StartDate = DateTime.Now;
             model.EndDate = DateTime.Now;
             modelList = TransactionAdapter.GetTransaction(userId);
+
+            categoryList = TransactionCategoryAdapter.GetTransactionCategories(userId);
+            foreach (var item in categoryList)
+            {
+                sumCost = SumCounterAdapter.GetCurrentSum(item.TransactionTypeID);
+            }
         }
     }
 
@@ -185,41 +191,28 @@
 
     private void HandleValidSubmitFilter()
     {
+        model.User = user;
+        model.User.Id = userId;
+
         if (model.Filter == "GetAll" || string.IsNullOrEmpty(model.Filter))
         {
             model.Filter = "GetAll";
-            var count = 0;
-            decimal sum = 0;
-            decimal expenditureSum = 0;
-            var modelListShow = new List<TransactionDto>();
-            modelList = TransactionAdapter.GetTransaction(userId).Where(z => !string.IsNullOrEmpty(z.Description)).ToList();
-            foreach (var item in modelList)
-            {
-                if(item.IsActive == false)
-                {
-                    sum = SumCounterAdapter.GetCurrentSum((int)item.TransactionTypeID);
-                }
-                else
-                {
-                    expenditureSum = SumCounterAdapter.GetCurrentSum((int)item.TransactionTypeID);
-                }
-
-              
-                if (sum > 0)
-                {
-                    modelList[count].Amount = sum;
-
-                }
-
-                if (expenditureSum > 0)
-                {
-                    modelList[count].Amount = expenditureSum;
-                }
-
-                count++;
-            }
+            modelList = TransactionAdapter.GetTransactionList(model);
         }
+        else
+        {
+            switch (model.Filter)
+            {
+                case "Income":
+                    model.IsActive = false;
+                    break;
+                case "OutCome":
+                    model.IsActive = true;
+                    break;
+            }
 
+            modelList = TransactionAdapter.GetTransactionList(model);
+        }
     }
 
     private void HandleValidSubmitPopup()
@@ -244,8 +237,9 @@
 
     public void ResetSearch()
     {
-
-
+        model.StartDate = DateTime.Now;
+        model.EndDate = DateTime.Now;
+        modelList = TransactionAdapter.GetTransaction(userId);
     }
 
     public void Delete(int id)
