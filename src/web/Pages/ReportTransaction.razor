@@ -164,7 +164,6 @@
                 {
                     sumExpenditures.Add(new SumExpenditure() { Note = item.Note, SumReceipt = item.Amount, SumExpenditure = sumExpenditure });
                 }
-
             }
 
             await _jsRuntime.InvokeVoidAsync("GeneralPieChartExpenditure", sumExpenditures);
