@@ -1,0 +1,72 @@
+USE [update-axy]
+GO
+/****** Object:  StoredProcedure [dbo].[sp_GetTransactionFilter]    Script Date: 04/11/2021 11:03:27 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+-- =============================================
+-- Author:		
+-- Create date: 
+-- Description:
+-- =============================================
+Create procedure [dbo].[sp_GetTransactionFilter] 
+	@UserId nvarchar(max),
+	@StartDate datetime2,
+	@EndDate datetime2,
+	@Filter nvarchar(10),
+	@IsActive bit
+AS
+BEGIN	
+	IF(@StartDate = @EndDate)
+	BEGIN
+			Select 
+			c.ID,
+			c.Amount,		
+			c.Note,
+			c.TransactionDate,
+			c.IsHidden,				
+			tt.ID	AS TransactionTypeID,
+			tc.ID AS TransactionCategoryID,
+			tc.IsActive,tc.Description AS DescriptionCategory		
+		From Transactions c
+		LEFT JOIN TransactionTypes tt on tt.ID= c.TransactionTypeID	
+		LEFT JOIN TransactionCategories tc on tc.ID= c.TransactionCategoryID
+		where c.UserId = @userId 
+		END
+	ELSE IF (@Filter ='GetAll')
+		BEGIN 
+		Select 
+			c.ID,
+			c.Amount,		
+			c.Note,
+			c.TransactionDate,
+			c.IsHidden,				
+			tt.ID	AS TransactionTypeID,
+			tc.ID AS TransactionCategoryID,
+			tc.IsActive,
+			tc.Description AS DescriptionCategory		
+		From Transactions c
+		LEFT JOIN TransactionTypes tt on tt.ID= c.TransactionTypeID	
+		LEFT JOIN TransactionCategories tc on tc.ID= c.TransactionCategoryID
+		where C.TransactionDate  BETWEEN @StartDate AND @EndDate AND c.UserId = @userId 
+		END 
+	ELSE
+		BEGIN 
+		Select 
+			c.ID,
+			c.Amount,		
+			c.Note,
+			c.TransactionDate,
+			c.IsHidden,				
+			tt.ID	AS TransactionTypeID,
+			tc.ID AS TransactionCategoryID,
+			tc.IsActive,tc.Description AS DescriptionCategory		
+		From Transactions c
+		LEFT JOIN TransactionTypes tt on tt.ID= c.TransactionTypeID	
+		LEFT JOIN TransactionCategories tc on tc.ID= c.TransactionCategoryID
+		where c.TransactionDate  BETWEEN @StartDate AND @EndDate AND  tc.IsActive=@IsActive AND  c.UserId = @userId 
+	END 	
+END
+
+  

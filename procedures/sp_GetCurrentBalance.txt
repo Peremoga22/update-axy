@@ -1,0 +1,41 @@
+USE [update-axy]
+GO
+/****** Object:  StoredProcedure [dbo].[sp_GetCalculatedSum]    Script Date: 04/11/2021 08:54:27 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+-- =============================================
+-- Author:		
+-- Create date: 
+-- Description:
+-- =============================================
+Create procedure [dbo].[sp_GetCurrentBalance] 
+@TransactionExpendureTypeId int,
+@TransactionReceiptTypeId int,
+@StartDate datetime2,
+@EndDate datetime2
+AS
+BEGIN
+SET NOCOUNT ON;
+	IF(@StartDate = @EndDate)
+	  BEGIN
+		SELECT 
+			 (SELECT Sum(Amount) from Transactions where TransactionTypeID = @TransactionReceiptTypeId ) as ReceiptAmount,
+			 Sum(Amount) As ExpenditureAcount
+		FROM Transactions
+        WHERE TransactionTypeID = @TransactionExpendureTypeId 
+	  END
+	ELSE
+	
+	BEGIN 
+		SELECT 
+			 (SELECT Sum(Amount) from Transactions where TransactionTypeID = @TransactionReceiptTypeId and  TransactionDate  BETWEEN @StartDate AND @EndDate) as ReceiptAmount,
+			 Sum(Amount) As ExpenditureAcount
+		FROM Transactions
+     WHERE TransactionTypeID = @TransactionExpendureTypeId and TransactionDate BETWEEN @StartDate AND @EndDate
+		
+   END
+END
+
+ 
