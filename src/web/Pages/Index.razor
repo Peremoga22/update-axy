@@ -109,21 +109,7 @@
         if (user.Identity.IsAuthenticated)
         {
             userId = user.FindFirst(ClaimTypes.NameIdentifier).Value;
-            //transactionCategoryList = TransactionCategoryAdapter.GetTransactionCategories(userId);
-            //foreach(var item in transactionCategoryList)
-            //{
-            //    if(item.IsActive == false)
-            //    {
-            //        modelSum.CurrentBalance = SumCounterAdapter.GetCurrentSum(item.TransactionTypeID);
-            //        modelSum.BalanceTheBeginningMounth = SumCounterAdapter.GetCurrentSum(item.TransactionTypeID);
-            //    }
-            //    else
-            //    {
-            //        sumCost = SumCounterAdapter.GetCurrentSum(item.TransactionTypeID);
-            //    }
-            //}
-
-            //modelSum.SavingForThisMounth = modelSum.CurrentBalance - sumCost;
+ 
             ShowSum();
         }
     }

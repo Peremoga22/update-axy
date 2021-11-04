@@ -83,6 +83,29 @@ namespace web.Data.Adapters
             return result;
         }
 
+        public static TransactionDto GetTransactionCurrentBalance(int transactionExpenditureId,int transactionReceiptId,TransactionDto model)
+        {
+            var result = new TransactionDto();
+            
+            var sql = string.Format(@"EXEC [sp_GetCurrentBalance] {0},{1},{2},{3}",
+            DataBaseHelper.RawSafeSqlString(transactionExpenditureId),
+            DataBaseHelper.RawSafeSqlString(transactionReceiptId),
+            DataBaseHelper.SafeSqlString(model.StartDate),
+            DataBaseHelper.SafeSqlString(model.EndDate));
+            var sqlResult = DataBaseHelper.GetSqlResult(sql);
+
+            if (sqlResult.Rows.Count > 0)
+            {
+                result = new TransactionDto
+                {                  
+                    ReceiptAmount = DataBaseHelper.GetDecimalValueFromRowByName(sqlResult.Rows[0], "ReceiptAmount"),
+                    ExpenditureAcount = DataBaseHelper.GetDecimalValueFromRowByName(sqlResult.Rows[0], "ExpenditureAcount")
+                };
+            }
+
+            return result;
+        }
+
         public static void SaveTransaction(TransactionDto model)
         {
             var sql = string.Empty;

@@ -5,7 +5,6 @@
 @using System.Timers
 @implements IDisposable
 
-
 <div class="alert alert-primary" role="alert" @onclick="Collaps">
     <p class="text-right" style="color:blue;">
         @_localizer["Costs"]: @sumCost
@@ -14,7 +13,6 @@
 </div>
 <div>
     <div class="@(Collapsed? "collapse": "" )">
-
         <EditForm Model="@model" OnValidSubmit="HandleValidSubmit" class="body  p-3 mb-5 rounded ">
             <DataAnnotationsValidator />
             <div>
@@ -55,7 +53,7 @@
         <div class="jumbotron">
             <div class="well span6" style="padding-top: 50px">
                 <h3 class="text-center">
-                    @_localizer["Savings for this month"]: @income
+                    @_localizer["Savings for this month"]: @modelSum.SavingForThisMounth
                 </h3>
             </div>
             <div class="well span6" style="padding-top: 50px">
@@ -85,18 +83,20 @@
     {
         <h2 class="text-center mt-5" style="color:blue;">@_localizer["The balance amount is zero."]</h2>
     }
-
 </div>
 
-
     @code {
+
         [CascadingParameter]
         private Task<AuthenticationState> authenticationStateTask { get; set; }
         TransactionDto model = new TransactionDto();
         List<TransactionDto> modelList = new List<TransactionDto>();
         List<SumBalance> sumBalance = new List<SumBalance>();
         List<SumExpenditure> sumExpenditures = new List<SumExpenditure>();
+        List<TransactionCategoryDto> transactionCategoryList = new List<TransactionCategoryDto>();
         List<SumReceipt> sumReceipts = new List<SumReceipt>();
+        UserApp user = new UserApp();
+        SumCounterDto modelSum = new SumCounterDto();
 
         decimal sumCost;
         bool Collapsed = true;
@@ -113,16 +113,16 @@
             model.EndDate = DateTime.Now;
             var authState = await authenticationStateTask;
             var user = authState.User;
+            model.Filter = "GetAll";
 
             if (user.Identity.IsAuthenticated)
             {
                 income = 1;
-                userId = user.FindFirst(ClaimTypes.NameIdentifier).Value;
-                var transactionCategoryList = TransactionCategoryAdapter.GetTransactionCategories(userId);
-                foreach (var item in transactionCategoryList)
-                {
-                    sumCost = SumCounterAdapter.GetCurrentSum(item.TransactionTypeID);
-                }
+                userId = user.FindFirst(ClaimTypes.NameIdentifier).Value;             
+                var typeId = GetTransactionType(false);
+                modelSum.SavingForThisMounth = SumCounterAdapter.GetCurrentSum(typeId);
+             
+                ShowSum();
             }
         }
 
@@ -134,6 +134,7 @@
                 GeneratePieChartBlazorBalance();
                 GeneratePieChartBlazorExpenditure();
                 GeneratePieChartBlazorReceipt();
+                count = 0;
             }
         }
 
@@ -160,10 +161,7 @@
             var modelList = TransactionAdapter.GetTransaction(userId).Where(z => z.IsActive == true).ToList();
             foreach (var item in modelList)
             {
-                if (sumReceipt > 0)
-                {
-                    sumExpenditures.Add(new SumExpenditure() { Note = item.Note, SumReceipt = item.Amount, SumExpenditure = sumExpenditure });
-                }
+                sumExpenditures.Add(new SumExpenditure() { Note = item.Note, SumReceipt = item.Amount, SumExpenditure = sumExpenditure });
             }
 
             await _jsRuntime.InvokeVoidAsync("GeneralPieChartExpenditure", sumExpenditures);
@@ -178,24 +176,154 @@
             var modelList = TransactionAdapter.GetTransaction(userId).Where(z => z.IsActive == false).ToList();
             foreach (var item in modelList)
             {
-                if (sumReceipt > 0)
-                {
-                    sumReceipts.Add(new SumReceipt() { Note = item.Note, SumReceipt = item.Amount, SumExpenditure = 0 });                   
-                }
+                sumReceipts.Add(new SumReceipt() { Note = item.Note, SumReceipt = item.Amount, SumExpenditure = 0 });
             }
 
             await _jsRuntime.InvokeVoidAsync("GeneralPieChartReceipt", sumReceipts);
         }
 
 
-        private void HandleValidSubmit()
+        private async Task HandleValidSubmit()
         {
+            model.User = user;
+            model.User.Id = userId;
 
+            if (model.Filter == "GetAll" || string.IsNullOrEmpty(model.Filter))
+            {
+                await TransactionBalanceFilter();
+                await ExpenditureFilter();
+                await ReceiptFilter();
+                var currendSum = CurrentSum();
+                modelSum.SavingForThisMounth = currendSum.ReceiptAmount - currendSum.ExpenditureAcount;
+                count = 0;
+            }
+            else
+            {
+                switch (model.Filter)
+                {
+                    case "Income":
+                        model.IsActive = false;
+                        break;
+                    case "OutCome":
+                        model.IsActive = true;
+                        break;
+                }
+
+                await ExpenditureFilter();
+                await ReceiptFilter();
+            }
         }
 
-        public void ResetSearch()
-        {
 
+        private async Task TransactionBalanceFilter()
+        {         
+            var sumtempBalanceBalance = new List<SumBalance>();          
+            var currendSum = CurrentSum();
+            sumtempBalanceBalance.Add(new SumBalance() { Note = "Outcome", SumReceipt = currendSum.ReceiptAmount, SumExpenditure = currendSum.ExpenditureAcount });
+            sumtempBalanceBalance.Add(new SumBalance() { Note = " Income", SumReceipt = currendSum.ReceiptAmount, SumExpenditure = 0 });
+            modelSum.SavingForThisMounth = currendSum.ReceiptAmount - currendSum.ExpenditureAcount;
+
+            await _jsRuntime.InvokeVoidAsync("GeneralPieChartBalans", sumtempBalanceBalance);
+            count = 0;
+        }
+
+        private async Task ExpenditureFilter()
+        {
+            var modelfilter = new List<TransactionDto>();
+            var tempSum = new List<SumExpenditure>();
+
+            if (model.Filter == "GetAll")
+            {
+                modelfilter = TransactionAdapter.GetTransactionList(model).Where(z => z.IsActive == true).ToList();
+                foreach (var item in modelfilter)
+                {
+                    tempSum.Add(new SumExpenditure() { Note = item.Note, SumReceipt = item.Amount, SumExpenditure = 0 });
+                }
+
+                await _jsRuntime.InvokeVoidAsync("GeneralPieChartExpenditure", tempSum);                                
+            }
+
+            if (model.Filter == "OutCome")
+            {               
+                var currendSum = CurrentSum();
+                modelfilter = TransactionAdapter.GetTransactionList(model).Where(z => z.IsActive == model.IsActive).ToList();
+                foreach (var item in modelfilter)
+                {
+                    tempSum.Add(new SumExpenditure() { Note = item.Note, SumReceipt = item.Amount, SumExpenditure = currendSum.ReceiptAmount });
+                }
+
+                await _jsRuntime.InvokeVoidAsync("GeneralPieChartExpenditure", tempSum);                                
+            }
+
+            count = 0;
+        }
+
+        private async Task ReceiptFilter()
+        {
+            var modelfilter = new List<TransactionDto>();
+            var tempReceiptSum = new List<SumReceipt>();
+            var currendSum = CurrentSum();
+
+            if (model.Filter == "GetAll")
+            {               
+                modelfilter = TransactionAdapter.GetTransactionList(model).Where(z => z.IsActive == false).ToList();
+                foreach (var item in modelfilter)
+                {
+                    tempReceiptSum.Add(new SumReceipt() { Note = item.Note, SumReceipt = item.Amount, SumExpenditure = 0 });
+                }
+
+                modelSum.SavingForThisMounth = currendSum.ReceiptAmount - currendSum.ExpenditureAcount;
+                await _jsRuntime.InvokeVoidAsync("GeneralPieChartReceipt", tempReceiptSum);                               
+            }
+
+            if(model.Filter == "Income")
+            {                
+                modelfilter = TransactionAdapter.GetTransactionList(model).Where(z => z.IsActive == model.IsActive).ToList();
+                foreach (var item in modelfilter)
+                {
+                    tempReceiptSum.Add(new SumReceipt() { Note = item.Note, SumReceipt = item.Amount, SumExpenditure = 0 });
+                }
+
+                modelSum.SavingForThisMounth = currendSum.ReceiptAmount - currendSum.ExpenditureAcount;
+                await _jsRuntime.InvokeVoidAsync("GeneralPieChartReceipt", tempReceiptSum);                              
+            }
+
+            count = 0;
+        }
+
+        private void ShowSum()
+        {
+            transactionCategoryList = TransactionCategoryAdapter.GetTransactionCategories(userId);
+            foreach (var item in transactionCategoryList)
+            {
+                if (item.IsActive == false)
+                {
+                    modelSum.CurrentBalance = SumCounterAdapter.GetCurrentSum(item.TransactionTypeID);
+                    modelSum.BalanceTheBeginningMounth = SumCounterAdapter.GetCurrentSum(item.TransactionTypeID);
+                }
+                else
+                {
+                    sumCost = SumCounterAdapter.GetCurrentSum(item.TransactionTypeID);
+                }
+            }
+
+            modelSum.SavingForThisMounth = modelSum.CurrentBalance - sumCost;
+        }
+
+        private TransactionDto CurrentSum()
+        {
+            var expenditureId = GetTransactionType(true);
+            var typeId = GetTransactionType(false);
+            var currendSum = TransactionAdapter.GetTransactionCurrentBalance(expenditureId, typeId, model);
+            return currendSum;
+        }
+
+        public async Task ResetSearch()
+        {
+            model.StartDate = DateTime.Now;
+            model.EndDate = DateTime.Now;
+            count = 1;
+            await _jsRuntime.InvokeVoidAsync("loadScript");
         }
 
         private void Collaps()
@@ -221,4 +349,4 @@
 
             return tempId;
         }
-    }
+ }
