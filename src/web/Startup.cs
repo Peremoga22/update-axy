@@ -18,6 +18,7 @@ using System.Threading.Tasks;
 using web.Areas.Identity;
 using web.Data;
 using web.Extension;
+using web.Services.Email;
 
 namespace web
 {
@@ -56,6 +57,7 @@ namespace web
                   googleOptions.ClientId = Configuration["Authentication:Google:ClientId"];
                   googleOptions.ClientSecret = Configuration["Authentication:Google:ClientSecret"];
               });
+            services.AddTransient<IEmailService, EmailClient>();
         }
 
         private RequestLocalizationOptions GetLocalizationOptions()
