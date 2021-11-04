@@ -118,10 +118,10 @@
             if (user.Identity.IsAuthenticated)
             {
                 income = 1;
-                userId = user.FindFirst(ClaimTypes.NameIdentifier).Value;             
+                userId = user.FindFirst(ClaimTypes.NameIdentifier).Value;
                 var typeId = GetTransactionType(false);
                 modelSum.SavingForThisMounth = SumCounterAdapter.GetCurrentSum(typeId);
-             
+
                 ShowSum();
             }
         }
@@ -216,14 +216,16 @@
 
 
         private async Task TransactionBalanceFilter()
-        {         
-            var sumtempBalanceBalance = new List<SumBalance>();          
+        {
+            var sumtempBalanceBalance = new List<SumBalance>();
             var currendSum = CurrentSum();
-            sumtempBalanceBalance.Add(new SumBalance() { Note = "Outcome", SumReceipt = currendSum.ReceiptAmount, SumExpenditure = currendSum.ExpenditureAcount });
-            sumtempBalanceBalance.Add(new SumBalance() { Note = " Income", SumReceipt = currendSum.ReceiptAmount, SumExpenditure = 0 });
             modelSum.SavingForThisMounth = currendSum.ReceiptAmount - currendSum.ExpenditureAcount;
+            sumtempBalanceBalance.Add(new SumBalance() { Note = "Outcome", SumReceipt = currendSum.ReceiptAmount, SumExpenditure = modelSum.SavingForThisMounth });
+            sumtempBalanceBalance.Add(new SumBalance() { Note = " Income", SumReceipt = currendSum.ReceiptAmount, SumExpenditure = 0 });
+
 
             await _jsRuntime.InvokeVoidAsync("GeneralPieChartBalans", sumtempBalanceBalance);
+
             count = 0;
         }
 
@@ -240,11 +242,11 @@
                     tempSum.Add(new SumExpenditure() { Note = item.Note, SumReceipt = item.Amount, SumExpenditure = 0 });
                 }
 
-                await _jsRuntime.InvokeVoidAsync("GeneralPieChartExpenditure", tempSum);                                
+                await _jsRuntime.InvokeVoidAsync("GeneralPieChartExpenditure", tempSum);
             }
 
             if (model.Filter == "OutCome")
-            {               
+            {
                 var currendSum = CurrentSum();
                 modelfilter = TransactionAdapter.GetTransactionList(model).Where(z => z.IsActive == model.IsActive).ToList();
                 foreach (var item in modelfilter)
@@ -252,7 +254,7 @@
                     tempSum.Add(new SumExpenditure() { Note = item.Note, SumReceipt = item.Amount, SumExpenditure = currendSum.ReceiptAmount });
                 }
 
-                await _jsRuntime.InvokeVoidAsync("GeneralPieChartExpenditure", tempSum);                                
+                await _jsRuntime.InvokeVoidAsync("GeneralPieChartExpenditure", tempSum);
             }
 
             count = 0;
@@ -265,7 +267,7 @@
             var currendSum = CurrentSum();
 
             if (model.Filter == "GetAll")
-            {               
+            {
                 modelfilter = TransactionAdapter.GetTransactionList(model).Where(z => z.IsActive == false).ToList();
                 foreach (var item in modelfilter)
                 {
@@ -273,11 +275,11 @@
                 }
 
                 modelSum.SavingForThisMounth = currendSum.ReceiptAmount - currendSum.ExpenditureAcount;
-                await _jsRuntime.InvokeVoidAsync("GeneralPieChartReceipt", tempReceiptSum);                               
+                await _jsRuntime.InvokeVoidAsync("GeneralPieChartReceipt", tempReceiptSum);
             }
 
             if(model.Filter == "Income")
-            {                
+            {
                 modelfilter = TransactionAdapter.GetTransactionList(model).Where(z => z.IsActive == model.IsActive).ToList();
                 foreach (var item in modelfilter)
                 {
@@ -285,7 +287,7 @@
                 }
 
                 modelSum.SavingForThisMounth = currendSum.ReceiptAmount - currendSum.ExpenditureAcount;
-                await _jsRuntime.InvokeVoidAsync("GeneralPieChartReceipt", tempReceiptSum);                              
+                await _jsRuntime.InvokeVoidAsync("GeneralPieChartReceipt", tempReceiptSum);
             }
 
             count = 0;
