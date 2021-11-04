@@ -177,6 +177,10 @@
     <value>Дохід/Розхід</value>
     <comment>Index</comment>
   </data>
+  <data name="Log in" xml:space="preserve">
+    <value>Логін</value>
+    <comment>LoginDisplay</comment>
+  </data>
   <data name="Log out" xml:space="preserve">
     <value>Вихід</value>
     <comment>LoginDisplay</comment>
@@ -188,6 +192,10 @@
   <data name="Receipt!" xml:space="preserve">
     <value>Доходи!</value>
     <comment>ReportTransaction</comment>
+  </data>
+  <data name="Register" xml:space="preserve">
+    <value>Реєстрація</value>
+    <comment>LoginDisplay</comment>
   </data>
   <data name="Reports" xml:space="preserve">
     <value>Графічна звітність</value>

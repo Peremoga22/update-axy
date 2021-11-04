@@ -177,6 +177,10 @@
     <value>Income/Outcome</value>
     <comment>Index</comment>
   </data>
+  <data name="Log in" xml:space="preserve">
+    <value>Log in</value>
+    <comment>LoginDisplay</comment>
+  </data>
   <data name="Log out" xml:space="preserve">
     <value>Log out</value>
     <comment>LoginDisplay</comment>
@@ -188,6 +192,10 @@
   <data name="Receipt!" xml:space="preserve">
     <value>Receipt!</value>
     <comment>ReportTransaction</comment>
+  </data>
+  <data name="Register" xml:space="preserve">
+    <value>Register</value>
+    <comment>LoginDisplay</comment>
   </data>
   <data name="Reports" xml:space="preserve">
     <value>Reports</value>
