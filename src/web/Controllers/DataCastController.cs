@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 
 using web.Data.ModelDtos.ModelDataCast;
@@ -33,18 +34,16 @@ namespace web.Controllers
             if (jsonString != null)
             {
                 var date = DateTime.Now.ToString("dd-MM-yyyy");
-                string path = Path.Combine(_environment.ContentRootPath, $"wwwroot\\dataCast\\{date}");
+                string path = Path.Combine(_environment.ContentRootPath, $"wwwroot\\dataCast\\{id}\\{date}");
                 if (!Directory.Exists(path))
                 {
                     Directory.CreateDirectory(path);
                 }
-
-                
-                filepath = $"{path}\\{id}" + ".json";
-               
-
+                               
+                var localTime = DateTime.Now.ToString("hh-mm-ss");
+              
+                filepath = $"{path}\\{localTime}" + ".json";                             
                 System.IO.File.WriteAllText(filepath, jsonString.ToString());
-
 
                 return Ok();
             }
