@@ -4,211 +4,245 @@
 @inject IStringLocalizer<App> _localizer
 @using System.Text.Json;
 @using System.Text.Json.Serialization;
+@using System.IO;
+@using Microsoft.Extensions.Configuration
+@inject IConfiguration Configuration
 
-
-    <div class="alert alert-primary" role="alert">
-        <p class="text-right" style="color:blue;">@_localizer["Costs"]: @sumCost</p>
-    </div>
-    <div class="text-center">
-        <div>
-            <div class="jumbotron">
-                <h1 class="display-4">@_localizer["Welcome Axy"]</h1>
-                <EditForm Model="@model" OnValidSubmit="HandleValidSubmit" class="card-body">
-                    <div class="form-group">
-                        <label>@_localizer["Date time"]</label>
-                        <input type="date" class="form-control" @bind-value="model.TransactionDate">
-                    </div>
-                    <div class="form-group">
-                        @if (!Approved)
-                        {
-                            <label for="formGroupExampleInput2">@_localizer["Sum"]</label>
-                            <InputNumber @bind-Value="model.Amount" class="form-control" placeholder="Sum" />
-                        }
-                        else
-                        {
-                            <label for="formGroupExampleInput2">@_localizer["Sum"]</label>
-                            <InputNumber @bind-Value="model.Amount" class="form-control" placeholder="Sum" />
-                        }
-
-                    </div>
-                    <div class="form-check form-switch">
-                        <input type="checkbox" class="form-check-input" @onclick="IsReceiptsExpenditures" id="flexSwitchCheckChecked" unchecked />
-                        <label class="form-check-label" for="flexSwitchCheckChecked" name="Model.IsIncome">@_localizer["Income/Outcome"] </label>
-                    </div>
-                    <br /><br />
-                    <label for="formGroupExampleInput">@_localizer["Category"] *<span style="color:red">@message</span></label><br />
-                    <div class="input-group mb-3">
-                        @if (!Approved)
-                        {
-                            <InputSelect class="custom-select" @bind-Value="model.TransactionCategory.ID" @onclick="(() => Reset())">
-                                <option value="">@_localizer["Choose an option"]</option>
-                                @foreach (var r in transactionCategoryList.Where(z => z.IsActive == false).ToList())
-                                    {
-                                    <option value="@r.ID">@r.Description</option>
-                                    }
-                            </InputSelect>
-                        }
-                        else
-                        {
-
-                            <InputSelect class="custom-select" @bind-Value="model.TransactionCategory.ID" @onclick="(() => Reset())">
-                                <option value="">Choose an option</option>
-                                @foreach (var e in transactionCategoryList.Where(z => z.IsActive == true).ToList())
-                                    {
-                                    <option value="@e.ID">@e.Description</option>
-                                    }
-                            </InputSelect>
-                        }
-
-                        <div class="input-group-append">
-                            <label class="input-group-text" for="inputGroupSelect02">
-                                @*<i @onclick="(() => Edit())" style='font-size:14px' class='far'>&#xf044;</i>*@
-                                <img @onclick="(() => Edit())" src="https://img.icons8.com/external-kiranshastry-solid-kiranshastry/21/000000/external-edit-interface-kiranshastry-solid-kiranshastry.png" />
-                            </label>
-
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="formGroupExampleInput2">@_localizer["Note"]</label>
-                        <InputText id="title" @bind-Value="model.Note" class="form-control" placeholder="@_localizer["Add note"]" />
-                    </div>
-                    <br />
-                    <button type="submit" class="btn btn-outline-warning ">@_localizer["Save"]</button>
-                </EditForm>
-            </div>
-
-            <div class="card">
-                <div class="card-body">
-                    <ul class="list-unstyled text-left">
-                        <li>@_localizer["Current balance"]: @modelSum.CurrentBalance</li>
-                        <li>@_localizer["Savings for this month"]: @modelSum.SavingForThisMounth</li>
-                        <li>@_localizer["Balance at the beginning of the month"]:@modelSum.BalanceTheBeginningMounth  </li>
-                    </ul>
+<div class="alert alert-primary" role="alert">
+    <p class="text-right" style="color:blue;">@_localizer["Costs"]: @sumCost</p>
+</div>
+<div class="text-center">
+    <div>
+        <div class="jumbotron">
+            <h1 class="display-4">@_localizer["Welcome Axy"]</h1>
+            <EditForm Model="@model" OnValidSubmit="HandleValidSubmit" class="card-body">
+                <div class="form-group">
+                    <label>@_localizer["Date time"]</label>
+                    <input type="date" class="form-control" @bind-value="model.TransactionDate">
                 </div>
+                <div class="form-group">
+                    @if (!Approved)
+                    {
+                        <label for="formGroupExampleInput2">@_localizer["Sum"]</label>
+                        <InputNumber @bind-Value="model.Amount" class="form-control" placeholder="Sum" />
+                    }
+                    else
+                    {
+                        <label for="formGroupExampleInput2">@_localizer["Sum"]</label>
+                        <InputNumber @bind-Value="model.Amount" class="form-control" placeholder="Sum" />
+                    }
+
+                </div>
+                <div class="form-check form-switch">
+                    <input type="checkbox" class="form-check-input" @onclick="IsReceiptsExpenditures" id="flexSwitchCheckChecked" unchecked />
+                    <label class="form-check-label" for="flexSwitchCheckChecked" name="Model.IsIncome">@_localizer["Income/Outcome"] </label>
+                </div>
+                <br /><br />
+                <label for="formGroupExampleInput">@_localizer["Category"] *<span style="color:red">@message</span></label><br />
+                <div class="input-group mb-3">
+                    @if (!Approved)
+                    {
+                        <InputSelect class="custom-select" @bind-Value="model.TransactionCategory.ID" @onclick="(() => Reset())">
+                            <option value="">@_localizer["Choose an option"]</option>
+                            @foreach (var r in transactionCategoryList.Where(z => z.IsActive == false).ToList())
+                                {
+                                <option value="@r.ID">@r.Description</option>
+                                }
+                        </InputSelect>
+                    }
+                    else
+                    {
+
+                        <InputSelect class="custom-select" @bind-Value="model.TransactionCategory.ID" @onclick="(() => Reset())">
+                            <option value="">Choose an option</option>
+                            @foreach (var e in transactionCategoryList.Where(z => z.IsActive == true).ToList())
+                                {
+                                <option value="@e.ID">@e.Description</option>
+                                }
+                        </InputSelect>
+                    }
+
+                    <div class="input-group-append">
+                        <label class="input-group-text" for="inputGroupSelect02">
+                            @*<i @onclick="(() => Edit())" style='font-size:14px' class='far'>&#xf044;</i>*@
+                            <img @onclick="(() => Edit())" src="https://img.icons8.com/external-kiranshastry-solid-kiranshastry/21/000000/external-edit-interface-kiranshastry-solid-kiranshastry.png" />
+                        </label>
+
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="formGroupExampleInput2">@_localizer["Note"]</label>
+                    <InputText id="title" @bind-Value="model.Note" class="form-control" placeholder="@_localizer["Add note"]" />
+                </div>
+                <br />
+                <button type="submit" class="btn btn-outline-warning ">@_localizer["Save"]</button>
+            </EditForm>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <ul class="list-unstyled text-left">
+                    <li>@_localizer["Current balance"]: @modelSum.CurrentBalance</li>
+                    <li>@_localizer["Savings for this month"]: @modelSum.SavingForThisMounth</li>
+                    <li>@_localizer["Balance at the beginning of the month"]:@modelSum.BalanceTheBeginningMounth  </li>
+                </ul>
             </div>
         </div>
     </div>
+</div>
 
 
-    @code{
+@code{
 
-        [CascadingParameter]
-        private Task<AuthenticationState> authenticationStateTask { get; set; }
+    [CascadingParameter]
+    private Task<AuthenticationState> authenticationStateTask { get; set; }
 
-        List<TransactionCategoryDto> transactionCategoryList = new List<TransactionCategoryDto>();
-        TransactionDto model = new TransactionDto();
-        SumCounterDto modelSum = new SumCounterDto();
-        public bool Approved = false;
-        string message;
-        decimal sumCost;
-        string userId;
+    List<TransactionCategoryDto> transactionCategoryList = new List<TransactionCategoryDto>();
+    TransactionDto model = new TransactionDto();
+    SumCounterDto modelSum = new SumCounterDto();
 
-        protected override async Task OnInitializedAsync()
+    MultipartFormDataContent content = new MultipartFormDataContent();
+    HttpClient client = new HttpClient();
+    Stream fileStreamVideo = new MemoryStream();
+
+    public bool Approved = false;
+    string message;
+    decimal sumCost;
+    string userId;
+    string url;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await authenticationStateTask;
+        var user = authState.User;
+        model.TransactionDate = DateTime.Now;
+        url = Configuration["ApiUrl"];
+
+
+        if (user.Identity.IsAuthenticated)
         {
-            var authState = await authenticationStateTask;
-            var user = authState.User;
-            model.TransactionDate = DateTime.Now;
+            userId = user.FindFirst(ClaimTypes.NameIdentifier).Value;
 
-            if (user.Identity.IsAuthenticated)
-            {
-                userId = user.FindFirst(ClaimTypes.NameIdentifier).Value;
-
-                ShowSum();
-            }
-            else
-            {
-                _navigationManager.NavigateTo("./Identity/Account/Login");
-            }
+            ShowSum();
         }
-
-        private void HandleValidSubmit()
+        else
         {
-            if (model.TransactionCategory.ID == 0)
-            {
-                message = "Please Choose an option!";
-            }
-            else
-            {
-                var temp = true;
-                var transactionType = new TransactionTypeDto();
-                TransactionDto newModel = new TransactionDto();
-                model.User = new UserApp();
-                model.TransactionType = transactionType;
-                var getTransactCateory = transactionCategoryList.Where(z => z.ID == model.TransactionCategory.ID).FirstOrDefault();
-                transactionType.ID = getTransactCateory.TransactionTypeID;
-                model.User.Id = userId;
-                //  TransactionAdapter.SaveTransaction(model);
-
-                if (temp)
-                {
-                    var jsonTransaction = SerealizedTransaction(model);
-
-                }
-
-                model = newModel;
-                model.TransactionDate = DateTime.Now;
-                transactionCategoryList = TransactionCategoryAdapter.GetTransactionCategories(userId).Where(z => z.IsActive == false).ToList();
-                Approved = false;
-                ShowSum();
-            }
-        }
-
-        public void IsReceiptsExpenditures()
-        {
-            if (Approved)
-            {
-                transactionCategoryList = TransactionCategoryAdapter.GetTransactionCategories(userId).Where(z => z.IsActive == false).ToList();
-            }
-            else
-            {
-                transactionCategoryList = TransactionCategoryAdapter.GetTransactionCategories(userId).Where(z => z.IsActive == true).ToList();
-            }
-
-            Approved = !Approved;
-        }
-
-        protected void Edit()
-        {
-            _navigationManager.NavigateTo("/transaction-category");
-        }
-
-        public void Reset()
-        {
-            message = "";
-        }
-
-        private void ShowSum()
-        {
-            transactionCategoryList = TransactionCategoryAdapter.GetTransactionCategories(userId);
-            foreach (var item in transactionCategoryList)
-            {
-                if (item.IsActive == false)
-                {
-                    modelSum.CurrentBalance = SumCounterAdapter.GetCurrentSum(item.TransactionTypeID);
-                    modelSum.BalanceTheBeginningMounth = SumCounterAdapter.GetCurrentSum(item.TransactionTypeID);
-                }
-                else
-                {
-                    sumCost = SumCounterAdapter.GetCurrentSum(item.TransactionTypeID);
-                }
-            }
-
-            modelSum.SavingForThisMounth = modelSum.CurrentBalance - sumCost;
-        }
-
-        private string  SerealizedTransaction(TransactionDto model)
-        {
-            var modelDataCast = new TransactionDataCast();
-            modelDataCast.Amount = model.Amount;
-            modelDataCast.Note = model.Note;
-            modelDataCast.TransactionDate = model.TransactionDate;
-            modelDataCast.IsHidden = model.IsHidden;
-            modelDataCast.TransactionCategoryID = model.TransactionType.ID;
-            modelDataCast.TransactionTypeID = model.TransactionType.ID;
-            modelDataCast.IsActive = model.IsActive;
-            modelDataCast.UserID = model.User.Id;
-            var jsonString = JsonSerializer.Serialize(modelDataCast);
-
-            return jsonString;
+            _navigationManager.NavigateTo("./Identity/Account/Login");
         }
     }
+
+    private async Task HandleValidSubmit()
+    {
+        if (model.TransactionCategory.ID == 0)
+        {
+            message = "Please Choose an option!";
+        }
+        else
+        {
+            var temp = true;
+            var transactionType = new TransactionTypeDto();
+            TransactionDto newModel = new TransactionDto();
+            model.User = new UserApp();
+            model.TransactionType = transactionType;
+            var getTransactCateory = transactionCategoryList.Where(z => z.ID == model.TransactionCategory.ID).FirstOrDefault();
+            transactionType.ID = getTransactCateory.TransactionTypeID;
+            model.User.Id = userId;
+            //  TransactionAdapter.SaveTransaction(model);
+
+            if (temp)
+            {
+                var jsonTransaction = SerealizedTransaction(model);
+                SaveTransactionSerelized(jsonTransaction);
+            }
+
+            model = newModel;
+            model.TransactionDate = DateTime.Now;
+            transactionCategoryList = TransactionCategoryAdapter.GetTransactionCategories(userId).Where(z => z.IsActive == false).ToList();
+            Approved = false;
+            ShowSum();
+        }
+    }
+
+    public void IsReceiptsExpenditures()
+    {
+        if (Approved)
+        {
+            transactionCategoryList = TransactionCategoryAdapter.GetTransactionCategories(userId).Where(z => z.IsActive == false).ToList();
+        }
+        else
+        {
+            transactionCategoryList = TransactionCategoryAdapter.GetTransactionCategories(userId).Where(z => z.IsActive == true).ToList();
+        }
+
+        Approved = !Approved;
+    }
+
+    protected void Edit()
+    {
+        _navigationManager.NavigateTo("/transaction-category");
+    }
+
+    public void Reset()
+    {
+        message = "";
+    }
+
+    private void ShowSum()
+    {
+        transactionCategoryList = TransactionCategoryAdapter.GetTransactionCategories(userId);
+        foreach (var item in transactionCategoryList)
+        {
+            if (item.IsActive == false)
+            {
+                modelSum.CurrentBalance = SumCounterAdapter.GetCurrentSum(item.TransactionTypeID);
+                modelSum.BalanceTheBeginningMounth = SumCounterAdapter.GetCurrentSum(item.TransactionTypeID);
+            }
+            else
+            {
+                sumCost = SumCounterAdapter.GetCurrentSum(item.TransactionTypeID);
+            }
+        }
+
+        modelSum.SavingForThisMounth = modelSum.CurrentBalance - sumCost;
+    }
+
+    private string SerealizedTransaction(TransactionDto model)
+    {
+        var modelDataCast = new TransactionDataCast();
+        modelDataCast.Amount = model.Amount;
+        modelDataCast.Note = model.Note;
+        modelDataCast.TransactionDate = model.TransactionDate;
+        modelDataCast.IsHidden = model.IsHidden;
+        modelDataCast.TransactionCategoryID = model.TransactionType.ID;
+        modelDataCast.TransactionTypeID = model.TransactionType.ID;
+        modelDataCast.IsActive = model.IsActive;
+        modelDataCast.UserID = model.User.Id;
+        var jsonString = JsonSerializer.Serialize(modelDataCast);
+
+        return jsonString;
+    }
+
+    private async Task SaveTransactionSerelized(string jsonString)
+    {
+        var message = string.Empty;
+        content.Headers.ContentDisposition = new System.Net.Http.Headers.ContentDispositionHeaderValue("form-data");
+        content.Add(new StringContent(jsonString), "jsonString");
+
+        content.Add(new StringContent(userId.ToString()), "id");
+
+        var response = await client.PostAsync($"{url}/api/dataCast", content, System.Threading.CancellationToken.None);
+
+
+        if (response.IsSuccessStatusCode)
+        {
+            message = "done!";
+        }
+        else
+        {
+            message = "error";
+
+        }
+
+        this.StateHasChanged();
+    }
+}

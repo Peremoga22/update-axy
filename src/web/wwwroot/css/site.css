@@ -42,12 +42,13 @@ a, .btn-link {
     z-index: 1000;
 }
 
-    #blazor-error-ui .dismiss {
+ #blazor-error-ui .dismiss {
         cursor: pointer;
         position: absolute;
         right: 0.75rem;
         top: 0.5rem;
-    }
+ }
+
 .card-img-left {
     width: 45%;
     /* Link to your background image using in the property below! */
