@@ -32,7 +32,7 @@ namespace web.Controllers
 
             if (jsonString != null)
             {
-                var date = DateTime.Now.ToString("dd-mm-yy");
+                var date = DateTime.Now.ToString("dd-MM-yyyy");
                 string path = Path.Combine(_environment.ContentRootPath, $"wwwroot\\dataCast\\{date}");
                 if (!Directory.Exists(path))
                 {
