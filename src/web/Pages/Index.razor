@@ -152,7 +152,7 @@
             if (temp)
             {
                 var jsonTransaction = SerealizedTransaction(model);
-                SaveTransactionSerelized(jsonTransaction);
+                await  SaveTransactionSerelized(jsonTransaction);
             }
 
             model = newModel;
