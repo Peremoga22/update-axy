@@ -221,6 +221,10 @@
     <value>Select...</value>
     <comment>ChooseLanguage</comment>
   </data>
+  <data name="Settings" xml:space="preserve">
+    <value>Settings</value>
+    <comment>NavMenu</comment>
+  </data>
   <data name="Site Language" xml:space="preserve">
     <value>Site Language</value>
     <comment>MainLayout</comment>

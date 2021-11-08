@@ -221,6 +221,10 @@
     <value>Вибрати...</value>
     <comment>ChooseLanguage</comment>
   </data>
+  <data name="Settings" xml:space="preserve">
+    <value>Налаштування</value>
+    <comment>NavMenu</comment>
+  </data>
   <data name="Site Language" xml:space="preserve">
     <value>Мова сайту</value>
     <comment>MainLayout</comment>
