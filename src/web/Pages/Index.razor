@@ -2,19 +2,15 @@
 @inject NavigationManager _navigationManager
 @inject IJSRuntime _jsRuntime
 @inject IStringLocalizer<App> _localizer
-@using System.Text.Json;
-@using System.Text.Json.Serialization;
-@using System.IO;
-@using Microsoft.Extensions.Configuration
 @inject IConfiguration Configuration
 
 <div class="alert alert-primary" role="alert">
-    <p class="text-right" style="color:blue;">@_localizer["Costs"]: @sumCost</p>
+    <p class="text-right" style="color:blue;">@_localizer["Costs"]: @sumCost.ToString("0")</p>
 </div>
 <div class="text-center">
     <div>
         <div class="jumbotron">
-            <h1 class="display-4">@_localizer["Welcome Axy"]</h1>
+            <h1 class="display-4">@_localizer["Welcome Blazor server"]</h1>
             <EditForm Model="@model" OnValidSubmit="HandleValidSubmit" class="card-body">
                 <div class="form-group">
                     <label>@_localizer["Date time"]</label>
@@ -63,8 +59,7 @@
                     }
 
                     <div class="input-group-append">
-                        <label class="input-group-text" for="inputGroupSelect02">
-                            @*<i @onclick="(() => Edit())" style='font-size:14px' class='far'>&#xf044;</i>*@
+                        <label class="input-group-text" for="inputGroupSelect02">                           
                             <img @onclick="(() => Edit())" src="https://img.icons8.com/external-kiranshastry-solid-kiranshastry/21/000000/external-edit-interface-kiranshastry-solid-kiranshastry.png" />
                         </label>
 
@@ -82,9 +77,9 @@
         <div class="card">
             <div class="card-body">
                 <ul class="list-unstyled text-left">
-                    <li>@_localizer["Current balance"]: @modelSum.CurrentBalance</li>
-                    <li>@_localizer["Savings for this month"]: @modelSum.SavingForThisMounth</li>
-                    <li>@_localizer["Balance at the beginning of the month"]:@modelSum.BalanceTheBeginningMounth  </li>
+                    <li>@_localizer["Current balance"]: @modelSum.CurrentBalance.ToString("0")</li>
+                    <li>@_localizer["Savings for this month"]: @modelSum.SavingForThisMounth.ToString("0")</li>
+                    <li>@_localizer["Balance at the beginning of the month"]:@modelSum.BalanceTheBeginningMounth.ToString("0") </li>
                 </ul>
             </div>
         </div>
@@ -100,24 +95,17 @@
     List<TransactionCategoryDto> transactionCategoryList = new List<TransactionCategoryDto>();
     TransactionDto model = new TransactionDto();
     SumCounterDto modelSum = new SumCounterDto();
-
-    MultipartFormDataContent content = new MultipartFormDataContent();
-    HttpClient client = new HttpClient();
-    Stream fileStreamVideo = new MemoryStream();
-
+      
     public bool Approved = false;
     string message;
     decimal sumCost;
-    string userId;
-    string url;
+    string userId;   
 
     protected override async Task OnInitializedAsync()
     {
         var authState = await authenticationStateTask;
         var user = authState.User;
-        model.TransactionDate = DateTime.Now;
-        url = Configuration["ApiUrl"];
-
+        model.TransactionDate = DateTime.Now;     
 
         if (user.Identity.IsAuthenticated)
         {
@@ -131,15 +119,14 @@
         }
     }
 
-    private async Task HandleValidSubmit()
+    private void  HandleValidSubmit()
     {
         if (model.TransactionCategory.ID == 0)
         {
             message = "Please Choose an option!";
         }
         else
-        {
-            var temp = true;
+        {           
             var transactionType = new TransactionTypeDto();
             TransactionDto newModel = new TransactionDto();
             model.User = new UserApp();
@@ -147,13 +134,7 @@
             var getTransactCateory = transactionCategoryList.Where(z => z.ID == model.TransactionCategory.ID).FirstOrDefault();
             transactionType.ID = getTransactCateory.TransactionTypeID;
             model.User.Id = userId;
-            //  TransactionAdapter.SaveTransaction(model);
-
-            if (temp)
-            {
-                var jsonTransaction = SerealizedTransaction(model);
-                await  SaveTransactionSerelized(jsonTransaction);
-            }
+            TransactionAdapter.SaveTransaction(model);
 
             model = newModel;
             model.TransactionDate = DateTime.Now;
@@ -204,45 +185,5 @@
         }
 
         modelSum.SavingForThisMounth = modelSum.CurrentBalance - sumCost;
-    }
-
-    private string SerealizedTransaction(TransactionDto model)
-    {
-        var modelDataCast = new TransactionDataCast();
-        modelDataCast.Amount = model.Amount;
-        modelDataCast.Note = model.Note;
-        modelDataCast.TransactionDate = model.TransactionDate;
-        modelDataCast.IsHidden = model.IsHidden;
-        modelDataCast.TransactionCategoryID = model.TransactionType.ID;
-        modelDataCast.TransactionTypeID = model.TransactionType.ID;
-        modelDataCast.IsActive = model.IsActive;
-        modelDataCast.UserID = model.User.Id;
-        var jsonString = JsonSerializer.Serialize(modelDataCast);
-
-        return jsonString;
-    }
-
-    private async Task SaveTransactionSerelized(string jsonString)
-    {
-        var message = string.Empty;
-        content.Headers.ContentDisposition = new System.Net.Http.Headers.ContentDispositionHeaderValue("form-data");
-        content.Add(new StringContent(jsonString), "jsonString");
-
-        content.Add(new StringContent(userId.ToString()), "id");
-
-        var response = await client.PostAsync($"{url}/api/dataCast", content, System.Threading.CancellationToken.None);
-
-
-        if (response.IsSuccessStatusCode)
-        {
-            message = "done!";
-        }
-        else
-        {
-            message = "error";
-
-        }
-
-        this.StateHasChanged();
-    }
+    }       
 }

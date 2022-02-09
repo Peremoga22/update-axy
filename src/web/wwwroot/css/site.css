@@ -52,7 +52,8 @@ a, .btn-link {
 .card-img-left {
     width: 45%;
     /* Link to your background image using in the property below! */
-    background: scroll center url('https://fcw.com/-/media/GIG/EDIT_SHARED/Cyber/intrusiondetection.png');
+    background: scroll center url('');
+    background-image: url('../imgs/seguridad-informatica-scaled.jpg');
     background-size: cover;
 }
 

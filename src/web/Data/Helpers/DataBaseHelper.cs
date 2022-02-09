@@ -57,6 +57,11 @@ namespace web.Data.Helpers
             }
         }
 
+        internal static decimal GetDecimalValueFromRowByName(string v1, string v2)
+        {
+            throw new NotImplementedException();
+        }
+
         public static DataTableCollection GetSqlResultCollection(string sql, bool isLowTimeout = false, int timeout = 0)
         {
             var connection = DBConnection;

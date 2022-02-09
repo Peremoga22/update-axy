@@ -241,8 +241,8 @@
     <value>Сума балансу дорівнює нулю.</value>
     <comment>ReportTransaction</comment>
   </data>
-  <data name="Welcome Axy" xml:space="preserve">
-    <value>Вітаємо на додатку Axy</value>
+  <data name="Welcome Blazor server" xml:space="preserve">
+    <value>Вітаємо на додатку Blazor server</value>
     <comment>Index</comment>
   </data>
 </root>

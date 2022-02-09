@@ -6,7 +6,7 @@
 
 <div class="alert alert-primary" role="alert" @onclick="Collaps">
     <p class="text-right" style="color:blue;">
-        @_localizer["Costs"]: @sumCost
+        @_localizer["Costs"]: @sumCost.ToString("0")
         <i class="fa fa-bar-chart text-left p-2" style="font-size:36px; text-align:left;"></i>
     </p>
 
@@ -64,7 +64,7 @@
             <tr>
                @if (item.IsActive)
                 {
-                    <td class="text-right" style="color:red">@item.Amount</td>
+                    <td class="text-right" style="color:red">@item.Amount.ToString("0")</td>
                     <td class="text-right">@item.Description</td>
                     <td class="text-right">@item.Note</td>                   
                     <td class="text-right">@item.TransactionDate.ToString("dd-MM-yyyy")</td>
@@ -72,7 +72,7 @@
                 }
                 else
                 {
-                    <td class="text-right" href="#" style="color:green">@item.Amount</td>
+                    <td class="text-right" href="#" style="color:green">@item.Amount.ToString("0")</td>
                     <td class="text-right">@item.Description</td>
                     <td class="text-right">@item.Note</td>
                     <td class="text-right">@item.TransactionDate.ToString("dd-MM-yyyy")</td>

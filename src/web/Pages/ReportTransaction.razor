@@ -7,7 +7,7 @@
 
 <div class="alert alert-primary" role="alert" @onclick="Collaps">
     <p class="text-right" style="color:blue;">
-        @_localizer["Costs"]: @sumCost
+        @_localizer["Costs"]: @sumCost.ToString("0")
         <i class="fa fa-bar-chart text-left p-2" style="font-size:36px; text-align:left;"></i>
     </p>
 </div>
@@ -53,7 +53,7 @@
         <div class="jumbotron">
             <div class="well span6" style="padding-top: 50px">
                 <h3 class="text-center">
-                    @_localizer["Savings for this month"]: @modelSum.SavingForThisMounth
+                    @_localizer["Savings for this month"]: @modelSum.SavingForThisMounth.ToString("0")
                 </h3>
             </div>
             <div class="well span6" style="padding-top: 50px">
@@ -126,14 +126,14 @@
             }
         }
 
-        protected override void OnAfterRender(bool firstRender)
+        protected override async Task OnAfterRenderAsync(bool firstRender)
         {
 
             if (count == 1)
             {
-                GeneratePieChartBlazorBalance();
-                GeneratePieChartBlazorExpenditure();
-                GeneratePieChartBlazorReceipt();
+                await  GeneratePieChartBlazorBalance();
+                await  GeneratePieChartBlazorExpenditure();
+                await  GeneratePieChartBlazorReceipt();
                 count = 0;
             }
         }

@@ -28,7 +28,7 @@
                             {
                                 <tr>
                                     <td class="text-center" style="color:green">@item.Description</td>
-                                    <td class="text-center">@item.ExpectedAmount</td>
+                                    <td class="text-center">@item.ExpectedAmount.ToString("0")</td>
                                     <td class="text-center">
                                         <button class="btn btn-sm btn-outline-dark">
                                             <img @onclick="(() => ShowPopupReciept(item.ID))" src="https://img.icons8.com/external-kiranshastry-solid-kiranshastry/21/000000/external-edit-interface-kiranshastry-solid-kiranshastry.png" />
@@ -60,7 +60,7 @@
                             {
                                 <tr>
                                     <td class="text-center" style="color:red">@item.Description</td>
-                                    <td class="text-center">@item.ExpectedAmount</td>
+                                    <td class="text-center">@item.ExpectedAmount.ToString("0")</td>
                                     <td class="text-center">
                                         <button class="btn btn-sm btn-outline-dark">
                                             <img @onclick="(() => ShowPopupExpenditure(item.ID))" src="https://img.icons8.com/external-kiranshastry-solid-kiranshastry/21/000000/external-edit-interface-kiranshastry-solid-kiranshastry.png" />
@@ -197,7 +197,7 @@
     {
         popupReceipt = true;
         model.IsActive = false;
-        model = TransactionCategoryAdapter.GetTransactionCategoryId(id);
+        model = TransactionCategoryAdapter.GetTransactionCategoryId(id);      
     }
 
     public void ShowPopupExpenditure(int id)

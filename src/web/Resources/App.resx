@@ -241,8 +241,8 @@
     <value>The balance amount is zero.</value>
     <comment>ReportTransaction</comment>
   </data>
-  <data name="Welcome Axy" xml:space="preserve">
-    <value>Welcome Axy</value>
+  <data name="Welcome Welcome Blazor server" xml:space="preserve">
+    <value>Welcome Welcome Blazor server</value>
     <comment>Index</comment>
   </data>
 </root>
